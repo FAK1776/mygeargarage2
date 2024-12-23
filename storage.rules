@@ -1,0 +1,24 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the path
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Gear images rules
+    match /users/{userId}/gear/{gearId}/{imageFile} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+                   && request.resource.size < 5 * 1024 * 1024 // 5MB
+                   && request.resource.contentType.matches('image/.*');
+      allow delete: if isOwner(userId);
+    }
+  }
+} 
