@@ -28,3 +28,14 @@ dist-ssr
 .env.local
 .env.development
 .env.production
+
+# Firebase Admin SDK
+*Firebase Admin SDK*.json
+
+# CORS config
+cors.json
+
+# Environment files
+.env
+.env.*
+!.env.example

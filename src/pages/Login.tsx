@@ -35,10 +35,18 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#EE5430] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <img
+          src="/logo.png"
+          alt="My Gear Garage"
+          className="h-[225px] w-[225px] object-contain"
+        />
+      </div>
+      
+      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">
             {isSignUp ? 'Create an account' : 'Sign in to your account'}
           </h2>
         </div>
@@ -73,7 +81,7 @@ export const Login = () => {
           )}
 
           <div className="space-y-4">
-            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">
+            <Button type="submit" className="w-full bg-[#EE5430] hover:bg-[#EE5430]/90">
               {isSignUp ? 'Sign Up' : 'Sign In'}
             </Button>
 
@@ -94,7 +102,7 @@ export const Login = () => {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-orange-600 hover:text-orange-500"
+                className="text-sm text-[#EE5430] hover:text-[#EE5430]/90"
               >
                 {isSignUp
                   ? 'Already have an account? Sign in'

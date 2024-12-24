@@ -1,5 +1,5 @@
 import React from 'react';
-import { BaseGear } from '../../types/gear';
+import { BaseGear, GearStatus } from '../../types/gear';
 import { FaGuitar, FaMicrophone, FaHeadphones, FaMusic, FaTrash } from 'react-icons/fa';
 import { GiGrandPiano, GiSpeaker } from 'react-icons/gi';
 
@@ -7,9 +7,10 @@ interface GearCardProps {
   gear: BaseGear;
   onClick?: () => void;
   onDelete?: () => void;
+  onStatusChange?: (status: GearStatus) => void;
 }
 
-export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete }) => {
+export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onStatusChange }) => {
   const getIcon = (category: string) => {
     switch (category.toLowerCase()) {
       case 'guitar':
@@ -25,6 +26,18 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete }) =
       default:
         return <FaMusic size={48} />;
     }
+  };
+
+  const handleStatusClick = (e: React.MouseEvent, status: GearStatus) => {
+    e.stopPropagation();
+    if (onStatusChange) {
+      onStatusChange(status);
+    }
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString();
   };
 
   return (
@@ -45,6 +58,41 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete }) =
             {getIcon(gear.category)}
           </div>
         )}
+        
+        {/* Status Toggle */}
+        <div className="absolute top-2 left-2 flex bg-white rounded-lg shadow-md overflow-hidden">
+          <button
+            onClick={(e) => handleStatusClick(e, GearStatus.Own)}
+            className={`px-3 py-1 text-sm transition-colors ${
+              gear.status === GearStatus.Own 
+                ? 'bg-green-500 text-white' 
+                : 'hover:bg-green-100'
+            }`}
+          >
+            Own
+          </button>
+          <button
+            onClick={(e) => handleStatusClick(e, GearStatus.Wishlist)}
+            className={`px-3 py-1 text-sm transition-colors ${
+              gear.status === GearStatus.Wishlist 
+                ? 'bg-blue-500 text-white' 
+                : 'hover:bg-blue-100'
+            }`}
+          >
+            Want
+          </button>
+          <button
+            onClick={(e) => handleStatusClick(e, GearStatus.Sold)}
+            className={`px-3 py-1 text-sm transition-colors ${
+              gear.status === GearStatus.Sold 
+                ? 'bg-gray-500 text-white' 
+                : 'hover:bg-gray-100'
+            }`}
+          >
+            Sold
+          </button>
+        </div>
+
         {onDelete && (
           <button
             onClick={(e) => {
@@ -62,11 +110,23 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete }) =
         <h3 className="text-lg font-semibold text-gray-800 truncate">
           {`${gear.make} ${gear.model}${gear.year ? ` (${gear.year})` : ''}`}
         </h3>
-        {gear.specs?.body?.shape && (
-          <p className="text-sm text-gray-600 mt-1 truncate">
-            {gear.specs.body.shape}
-          </p>
-        )}
+        <div className="mt-1 space-y-1">
+          {gear.placeOfOrigin && (
+            <p className="text-sm text-gray-600 truncate">
+              Made in {gear.placeOfOrigin}
+            </p>
+          )}
+          {gear.dateAcquired && (
+            <p className="text-sm text-gray-500 truncate">
+              Acquired {formatDate(gear.dateAcquired)}
+            </p>
+          )}
+          {gear.specs?.body?.shape && (
+            <p className="text-sm text-gray-600 truncate">
+              {gear.specs.body.shape}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

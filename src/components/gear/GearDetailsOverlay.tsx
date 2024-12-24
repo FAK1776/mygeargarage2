@@ -1,21 +1,23 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { BaseGear, GuitarSpecs } from '../../types/gear';
+import React, { useRef, useState, useEffect } from 'react';
+import { BaseGear, GearStatus, GuitarSpecs } from '../../types/gear';
+import { FaTimes, FaChevronLeft, FaChevronRight, FaTrash, FaUpload, FaImage, FaEdit, FaSave } from 'react-icons/fa';
 import { GearService } from '../../services/gearService';
 import { useAuth } from '../../hooks/useAuth';
-import { FaChevronLeft, FaChevronRight, FaTimes, FaTrash, FaUpload, FaImage } from 'react-icons/fa';
 
 interface GearDetailsOverlayProps {
   gear: BaseGear;
   onClose: () => void;
-  onUpdate: (updatedGear: BaseGear) => void;
+  onUpdate?: (gear: BaseGear) => void;
 }
 
 export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, onClose, onUpdate }) => {
   const { user } = useAuth();
+  const gearService = new GearService();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedGear, setEditedGear] = useState<BaseGear>(gear);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const gearService = new GearService();
 
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
@@ -28,17 +30,23 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
     return () => window.removeEventListener('keydown', handleEscKey);
   }, [onClose]);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleSave = () => {
+    if (onUpdate) {
+      onUpdate(editedGear);
+    }
+    setIsEditing(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
-  }, []);
+  };
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDragLeave = () => {
     setIsDragging(false);
-  }, []);
+  };
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
 
@@ -49,12 +57,15 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
       for (const file of files) {
         if (!file.type.startsWith('image/')) continue;
         const updatedGear = await gearService.addImage(user!.uid, gear.id, file);
-        onUpdate(updatedGear);
+        if (onUpdate) {
+          onUpdate(updatedGear);
+        }
+        setEditedGear(updatedGear);
       }
     } catch (error) {
       console.error('Error uploading images:', error);
     }
-  }, [gear.id, user, onUpdate]);
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -64,7 +75,10 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
       for (const file of files) {
         if (!file.type.startsWith('image/')) continue;
         const updatedGear = await gearService.addImage(user!.uid, gear.id, file);
-        onUpdate(updatedGear);
+        if (onUpdate) {
+          onUpdate(updatedGear);
+        }
+        setEditedGear(updatedGear);
       }
     } catch (error) {
       console.error('Error uploading images:', error);
@@ -76,7 +90,10 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
 
     try {
       const updatedGear = await gearService.deleteImage(user!.uid, gear.id, currentImageIndex);
-      onUpdate(updatedGear);
+      if (onUpdate) {
+        onUpdate(updatedGear);
+      }
+      setEditedGear(updatedGear);
       if (currentImageIndex >= updatedGear.images.length) {
         setCurrentImageIndex(Math.max(0, updatedGear.images.length - 1));
       }
@@ -95,14 +112,92 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
     setCurrentImageIndex((prev) => (prev - 1 + gear.images.length) % gear.images.length);
   };
 
-  const renderSpecRow = (label: string, value: string | undefined) => {
-    if (!value || value === 'N/A') return null;
+  const renderSpecRow = (label: string, value: string | undefined | null, field?: keyof BaseGear) => {
+    if (!isEditing && (!value || value === 'N/A')) return null;
+    
+    if (isEditing && field) {
+      if (field === 'dateAcquired' || field === 'dateSold') {
+        const dateValue = editedGear[field] ? new Date(editedGear[field] as Date).toISOString().split('T')[0] : '';
+        return (
+          <div className="flex justify-between py-1 border-b border-gray-100">
+            <label className="text-gray-600 min-w-[120px]">{label}:</label>
+            <input
+              type="date"
+              value={dateValue}
+              onChange={(e) => {
+                const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                setEditedGear({ ...editedGear, [field]: newDate });
+              }}
+              className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        );
+      }
+      
+      if (field === 'pricePaid' || field === 'priceSold') {
+        return (
+          <div className="flex justify-between py-1 border-b border-gray-100">
+            <label className="text-gray-600 min-w-[120px]">{label}:</label>
+            <input
+              type="number"
+              step="0.01"
+              value={editedGear[field] as number || ''}
+              onChange={(e) => setEditedGear({ ...editedGear, [field]: parseFloat(e.target.value) || undefined })}
+              className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        );
+      }
+
+      if (field === 'acquisitionNotes' || field === 'saleNotes') {
+        return (
+          <div className="flex justify-between py-1 border-b border-gray-100">
+            <label className="text-gray-600 min-w-[120px]">{label}:</label>
+            <textarea
+              value={editedGear[field] as string || ''}
+              onChange={(e) => setEditedGear({ ...editedGear, [field]: e.target.value })}
+              className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+            />
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex justify-between py-1 border-b border-gray-100">
+          <label className="text-gray-600 min-w-[120px]">{label}:</label>
+          <input
+            type="text"
+            value={editedGear[field] as string || ''}
+            onChange={(e) => setEditedGear({ ...editedGear, [field]: e.target.value })}
+            className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="flex justify-between py-1 border-b border-gray-100">
         <span className="text-gray-600 min-w-[120px]">{label}:</span>
         <span className="text-gray-900 font-medium text-right flex-1 ml-4">{value}</span>
       </div>
     );
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return null;
+    if (typeof date === 'string') {
+      return new Date(date).toLocaleDateString();
+    }
+    return date.toLocaleDateString();
+  };
+
+  const formatPrice = (price: number | undefined) => {
+    if (!price) return null;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
   };
 
   const specs = gear.specs as GuitarSpecs;
@@ -122,6 +217,23 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
           >
             <FaTimes size={24} />
           </button>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <button
+                onClick={handleSave}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+              >
+                <FaSave /> Save
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                <FaEdit /> Edit
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="p-6">
@@ -211,15 +323,33 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
               <div>
                 <h3 className="text-xl font-semibold mb-3">General Information</h3>
                 <div className="space-y-1">
-                  {renderSpecRow('Make', gear.make)}
-                  {renderSpecRow('Model', gear.model)}
-                  {renderSpecRow('Year', gear.year)}
-                  {renderSpecRow('Model Number', gear.modelNumber)}
-                  {renderSpecRow('Series', gear.series)}
-                  {renderSpecRow('Serial Number', gear.serialNumber)}
-                  {renderSpecRow('Orientation', gear.orientation)}
-                  {renderSpecRow('Number of Strings', gear.numberOfStrings)}
-                  {renderSpecRow('Weight', gear.weight)}
+                  {renderSpecRow('Make', gear.make, 'make')}
+                  {renderSpecRow('Model', gear.model, 'model')}
+                  {renderSpecRow('Year', gear.year, 'year')}
+                  {renderSpecRow('Model Number', gear.modelNumber, 'modelNumber')}
+                  {renderSpecRow('Series', gear.series, 'series')}
+                  {renderSpecRow('Serial Number', gear.serialNumber, 'serialNumber')}
+                  {renderSpecRow('Orientation', gear.orientation, 'orientation')}
+                  {renderSpecRow('Number of Strings', gear.numberOfStrings, 'numberOfStrings')}
+                  {renderSpecRow('Weight', gear.weight, 'weight')}
+                  {renderSpecRow('Place of Origin', gear.placeOfOrigin, 'placeOfOrigin')}
+                </div>
+              </div>
+
+              {/* Acquisition & Sale Details */}
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Acquisition & Sale Details</h3>
+                <div className="space-y-1">
+                  {renderSpecRow('Date Acquired', formatDate(gear.dateAcquired), 'dateAcquired')}
+                  {renderSpecRow('Price Paid', formatPrice(gear.pricePaid), 'pricePaid')}
+                  {renderSpecRow('Acquisition Notes', gear.acquisitionNotes, 'acquisitionNotes')}
+                  {(isEditing || gear.status === GearStatus.Sold) && (
+                    <>
+                      {renderSpecRow('Date Sold', formatDate(gear.dateSold), 'dateSold')}
+                      {renderSpecRow('Price Sold', formatPrice(gear.priceSold), 'priceSold')}
+                      {renderSpecRow('Sale Notes', gear.saleNotes, 'saleNotes')}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -228,16 +358,16 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Body</h3>
                   <div className="space-y-1">
-                    {renderSpecRow('Shape', specs.body.shape)}
-                    {renderSpecRow('Type', specs.body.type)}
-                    {renderSpecRow('Material', specs.body.material)}
-                    {renderSpecRow('Top/Back', specs.body.topBack)}
-                    {renderSpecRow('Finish', specs.body.finish)}
-                    {renderSpecRow('Depth', specs.body.depth)}
-                    {renderSpecRow('Binding', specs.body.binding)}
-                    {renderSpecRow('Bracing', specs.body.bracing)}
-                    {renderSpecRow('Cutaway', specs.body.cutaway)}
-                    {renderSpecRow('Top Color', specs.body.topColor)}
+                    {renderSpecRow('Shape', specs.body.shape, 'bodyShape')}
+                    {renderSpecRow('Type', specs.body.type, 'bodyType')}
+                    {renderSpecRow('Material', specs.body.material, 'bodyMaterial')}
+                    {renderSpecRow('Top/Back', specs.body.topBack, 'bodyTopBack')}
+                    {renderSpecRow('Finish', specs.body.finish, 'bodyFinish')}
+                    {renderSpecRow('Depth', specs.body.depth, 'bodyDepth')}
+                    {renderSpecRow('Binding', specs.body.binding, 'bodyBinding')}
+                    {renderSpecRow('Bracing', specs.body.bracing, 'bodyBracing')}
+                    {renderSpecRow('Cutaway', specs.body.cutaway, 'bodyCutaway')}
+                    {renderSpecRow('Top Color', specs.body.topColor, 'bodyTopColor')}
                   </div>
                 </div>
               )}
@@ -247,21 +377,21 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Neck</h3>
                   <div className="space-y-1">
-                    {renderSpecRow('Material', specs.neck.material)}
-                    {renderSpecRow('Shape', specs.neck.shape)}
-                    {renderSpecRow('Thickness', specs.neck.thickness)}
-                    {renderSpecRow('Construction', specs.neck.construction)}
-                    {renderSpecRow('Finish', specs.neck.finish)}
-                    {renderSpecRow('Scale Length', specs.neck.scaleLength)}
-                    {renderSpecRow('Fingerboard Material', specs.neck.fingerboardMaterial)}
-                    {renderSpecRow('Fingerboard Radius', specs.neck.fingerboardRadius)}
-                    {renderSpecRow('Number of Frets', specs.neck.numberOfFrets)}
-                    {renderSpecRow('Fret Size', specs.neck.fretSize)}
-                    {renderSpecRow('Nut Material', specs.neck.nutMaterial)}
-                    {renderSpecRow('Nut Width', specs.neck.nutWidth)}
-                    {renderSpecRow('Fingerboard Inlays', specs.neck.fingerboardInlays)}
-                    {renderSpecRow('Binding', specs.neck.binding)}
-                    {renderSpecRow('Side Dots', specs.neck.sideDots)}
+                    {renderSpecRow('Material', specs.neck.material, 'neckMaterial')}
+                    {renderSpecRow('Shape', specs.neck.shape, 'neckShape')}
+                    {renderSpecRow('Thickness', specs.neck.thickness, 'neckThickness')}
+                    {renderSpecRow('Construction', specs.neck.construction, 'neckConstruction')}
+                    {renderSpecRow('Finish', specs.neck.finish, 'neckFinish')}
+                    {renderSpecRow('Scale Length', specs.neck.scaleLength, 'neckScaleLength')}
+                    {renderSpecRow('Fingerboard Material', specs.neck.fingerboardMaterial, 'neckFingerboardMaterial')}
+                    {renderSpecRow('Fingerboard Radius', specs.neck.fingerboardRadius, 'neckFingerboardRadius')}
+                    {renderSpecRow('Number of Frets', specs.neck.numberOfFrets, 'neckNumberOfFrets')}
+                    {renderSpecRow('Fret Size', specs.neck.fretSize, 'neckFretSize')}
+                    {renderSpecRow('Nut Material', specs.neck.nutMaterial, 'neckNutMaterial')}
+                    {renderSpecRow('Nut Width', specs.neck.nutWidth, 'neckNutWidth')}
+                    {renderSpecRow('Fingerboard Inlays', specs.neck.fingerboardInlays, 'neckFingerboardInlays')}
+                    {renderSpecRow('Binding', specs.neck.binding, 'neckBinding')}
+                    {renderSpecRow('Side Dots', specs.neck.sideDots, 'neckSideDots')}
                   </div>
                 </div>
               )}
@@ -271,10 +401,10 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Headstock</h3>
                   <div className="space-y-1">
-                    {renderSpecRow('Shape', specs.headstock.shape)}
-                    {renderSpecRow('Binding', specs.headstock.binding)}
-                    {renderSpecRow('Tuning Machines', specs.headstock.tuningMachines)}
-                    {renderSpecRow('Headplate Logo', specs.headstock.headplateLogo)}
+                    {renderSpecRow('Shape', specs.headstock.shape, 'headstockShape')}
+                    {renderSpecRow('Binding', specs.headstock.binding, 'headstockBinding')}
+                    {renderSpecRow('Tuning Machines', specs.headstock.tuningMachines, 'headstockTuningMachines')}
+                    {renderSpecRow('Headplate Logo', specs.headstock.headplateLogo, 'headstockHeadplateLogo')}
                   </div>
                 </div>
               )}
@@ -284,12 +414,12 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Hardware</h3>
                   <div className="space-y-1">
-                    {renderSpecRow('Bridge', specs.hardware.bridge)}
-                    {renderSpecRow('Tailpiece', specs.hardware.tailpiece)}
-                    {renderSpecRow('Finish', specs.hardware.finish)}
-                    {renderSpecRow('Pickguard', specs.hardware.pickguard)}
-                    {renderSpecRow('Knobs', specs.hardware.knobs)}
-                    {renderSpecRow('Strap Buttons', specs.hardware.strapButtons)}
+                    {renderSpecRow('Bridge', specs.hardware.bridge, 'hardwareBridge')}
+                    {renderSpecRow('Tailpiece', specs.hardware.tailpiece, 'hardwareTailpiece')}
+                    {renderSpecRow('Finish', specs.hardware.finish, 'hardwareFinish')}
+                    {renderSpecRow('Pickguard', specs.hardware.pickguard, 'hardwarePickguard')}
+                    {renderSpecRow('Knobs', specs.hardware.knobs, 'hardwareKnobs')}
+                    {renderSpecRow('Strap Buttons', specs.hardware.strapButtons, 'hardwareStrapButtons')}
                   </div>
                 </div>
               )}
@@ -299,13 +429,13 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Electronics</h3>
                   <div className="space-y-1">
-                    {renderSpecRow('Pickup System', specs.electronics.pickupSystem)}
-                    {renderSpecRow('Neck Pickup', specs.electronics.neckPickup)}
-                    {renderSpecRow('Bridge Pickup', specs.electronics.bridgePickup)}
-                    {renderSpecRow('Pickup Configuration', specs.electronics.pickupConfiguration)}
-                    {renderSpecRow('Controls', specs.electronics.controls)}
-                    {renderSpecRow('Pickup Switching', specs.electronics.pickupSwitching)}
-                    {renderSpecRow('Auxiliary Switching', specs.electronics.auxiliarySwitching)}
+                    {renderSpecRow('Pickup System', specs.electronics.pickupSystem, 'electronicsPickupSystem')}
+                    {renderSpecRow('Neck Pickup', specs.electronics.neckPickup, 'electronicsNeckPickup')}
+                    {renderSpecRow('Bridge Pickup', specs.electronics.bridgePickup, 'electronicsBridgePickup')}
+                    {renderSpecRow('Pickup Configuration', specs.electronics.pickupConfiguration, 'electronicsPickupConfiguration')}
+                    {renderSpecRow('Controls', specs.electronics.controls, 'electronicsControls')}
+                    {renderSpecRow('Pickup Switching', specs.electronics.pickupSwitching, 'electronicsPickupSwitching')}
+                    {renderSpecRow('Auxiliary Switching', specs.electronics.auxiliarySwitching, 'electronicsAuxiliarySwitching')}
                   </div>
                 </div>
               )}
@@ -315,9 +445,10 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Extras</h3>
                   <div className="space-y-1">
-                    {renderSpecRow('Case/Gig Bag', specs.extras.caseOrGigBag)}
-                    {renderSpecRow('Modifications/Repairs', specs.extras.modificationsRepairs)}
-                    {renderSpecRow('Unique Features', specs.extras.uniqueFeatures)}
+                    {renderSpecRow('Strings', specs.extras.strings, 'extrasStrings')}
+                    {renderSpecRow('Case/Gig Bag', specs.extras.caseOrGigBag, 'extrasCaseOrGigBag')}
+                    {renderSpecRow('Modifications/Repairs', specs.extras.modificationsRepairs, 'extrasModificationsRepairs')}
+                    {renderSpecRow('Unique Features', specs.extras.uniqueFeatures, 'extrasUniqueFeatures')}
                   </div>
                 </div>
               )}
