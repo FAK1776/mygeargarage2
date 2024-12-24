@@ -1,56 +1,49 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC2P8su381IeMd21AnRn-rwsFfULZoG2BM",
   authDomain: "my-gear-garage.firebaseapp.com",
   projectId: "my-gear-garage",
-  storageBucket: "my-gear-garage.firebasestorage.app",
+  storageBucket: "my-gear-garage.appspot.com",
   messagingSenderId: "724193199225",
-  appId: "1:724193199225:web:22fc1ca574753a134e80a8",
-  measurementId: "G-C1DL0QH9WM"
+  appId: "1:724193199225:web:22fc1ca574753a134e80a8"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-getAnalytics(app);
 
-// Initialize Auth with persistence
-export const auth = getAuth(app);
+// Initialize Firebase Authentication and get a reference to the service
+const auth = getAuth(app);
+
+// Set persistence to LOCAL
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
     console.log('Firebase Auth persistence configured');
   })
   .catch((error) => {
-    console.error('Error setting auth persistence:', error);
+    console.error('Error setting persistence:', error);
   });
 
-// Initialize Firestore with persistence
-export const db = getFirestore(app);
+// Initialize Firestore
+const db = getFirestore(app);
+
+// Enable offline persistence
 enableIndexedDbPersistence(db)
   .then(() => {
     console.log('Firestore persistence enabled');
   })
-  .catch((error) => {
-    console.error('Error enabling Firestore persistence:', error);
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('The current browser does not support persistence.');
+    }
   });
 
-// Set up auth state listener
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log('Auth state changed: User is signed in');
-    // Force token refresh
-    user.getIdToken(true)
-      .then(() => console.log('Auth token refreshed'))
-      .catch(error => console.error('Error refreshing token:', error));
-  } else {
-    console.log('Auth state changed: User is signed out');
-  }
-});
+// Initialize Storage
+const storage = getStorage(app);
 
-export const storage = getStorage(app);
-export default app; 
+export { auth, db, storage }; 

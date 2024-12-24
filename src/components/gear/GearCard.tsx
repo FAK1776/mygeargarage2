@@ -1,94 +1,73 @@
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  IconButton,
-  Box,
-  Chip,
-  CardActions,
-  Tooltip
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { BaseGear } from '../../types/gear';
+import { FaGuitar, FaMicrophone, FaHeadphones, FaMusic, FaTrash } from 'react-icons/fa';
+import { GiGrandPiano, GiSpeaker } from 'react-icons/gi';
 
 interface GearCardProps {
   gear: BaseGear;
-  onEdit?: (gear: BaseGear) => void;
-  onDelete?: (gear: BaseGear) => void;
+  onClick?: () => void;
+  onDelete?: () => void;
 }
 
-export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) => {
-  const handleEdit = () => {
-    if (onEdit) {
-      onEdit(gear);
-    }
-  };
-
-  const handleDelete = () => {
-    if (onDelete && window.confirm('Are you sure you want to delete this gear?')) {
-      onDelete(gear);
+export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete }) => {
+  const getIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'guitar':
+        return <FaGuitar size={48} />;
+      case 'microphone':
+        return <FaMicrophone size={48} />;
+      case 'headphones':
+        return <FaHeadphones size={48} />;
+      case 'speakers':
+        return <GiSpeaker size={48} />;
+      case 'piano':
+        return <GiGrandPiano size={48} />;
+      default:
+        return <FaMusic size={48} />;
     }
   };
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardMedia
-        component="img"
-        height="200"
-        image={gear.imageUrl || '/placeholder-gear.jpg'}
-        alt={gear.name}
-        sx={{ objectFit: 'cover' }}
-      />
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography gutterBottom variant="h6" component="h2" noWrap>
-          {gear.name}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          {gear.brand} {gear.model}
-        </Typography>
-        
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-          <Chip
-            label={gear.type}
-            size="small"
-            color="primary"
-            variant="outlined"
+    <div 
+      className="group bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-lg relative"
+      onClick={onClick}
+    >
+      <div className="relative h-64 bg-gray-200">
+        {gear.images && gear.images.length > 0 ? (
+          <img
+            src={gear.images[0]}
+            alt={`${gear.make} ${gear.model}`}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            style={{ imageRendering: 'crisp-edges' }}
           />
-          {gear.category && (
-            <Chip
-              label={gear.category}
-              size="small"
-              color="secondary"
-              variant="outlined"
-            />
-          )}
-        </Box>
-
-        <Typography variant="body2" color="text.secondary">
-          {gear.description?.slice(0, 100)}
-          {gear.description && gear.description.length > 100 ? '...' : ''}
-        </Typography>
-      </CardContent>
-
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        {onEdit && (
-          <Tooltip title="Edit">
-            <IconButton size="small" onClick={handleEdit}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            {getIcon(gear.category)}
+          </div>
         )}
         {onDelete && (
-          <Tooltip title="Delete">
-            <IconButton size="small" onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-300 transform hover:scale-110"
+            title="Delete gear"
+          >
+            <FaTrash size={16} />
+          </button>
         )}
-      </CardActions>
-    </Card>
+      </div>
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-gray-800 truncate">
+          {`${gear.make} ${gear.model}${gear.year ? ` (${gear.year})` : ''}`}
+        </h3>
+        {gear.specs?.body?.shape && (
+          <p className="text-sm text-gray-600 mt-1 truncate">
+            {gear.specs.body.shape}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }; 

@@ -1,21 +1,10 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where,
-  Timestamp,
-  DocumentData
-} from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '../config/firebase';
+import { collection, doc, getDocs, query, where, updateDoc, Timestamp, DocumentData, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { BaseGear } from '../types/gear';
 
 export class GearService {
   private gearCollection = collection(db, 'gear');
+  private maxImageSize = 1200; // Maximum width/height for images
 
   private convertToGear(doc: DocumentData): BaseGear {
     const data = doc.data();
@@ -23,7 +12,8 @@ export class GearService {
       id: doc.id,
       ...data,
       createdAt: data.createdAt?.toDate(),
-      updatedAt: data.updatedAt?.toDate()
+      updatedAt: data.updatedAt?.toDate(),
+      images: Array.isArray(data.images) ? data.images : []
     } as BaseGear;
   }
 
@@ -42,18 +32,15 @@ export class GearService {
     try {
       const now = Timestamp.now();
       
-      // Sanitize the data before saving
       const sanitizedGear = {
         ...gear,
         userId,
         createdAt: now,
         updatedAt: now,
-        // Ensure no undefined values
         description: gear.description || '',
         category: gear.category || '',
         subcategory: gear.subcategory || '',
-        imageUrl: gear.imageUrl || '',
-        // Deep clone and sanitize specs
+        images: Array.isArray(gear.images) ? gear.images : [],
         specs: JSON.parse(JSON.stringify(gear.specs || {}))
       };
 
@@ -74,7 +61,6 @@ export class GearService {
   async updateGear(userId: string, gearId: string, updates: Partial<BaseGear>): Promise<void> {
     try {
       const docRef = doc(this.gearCollection, gearId);
-      // Ensure the gear belongs to the user before updating
       const q = query(this.gearCollection, where('userId', '==', userId), where('id', '==', gearId));
       const querySnapshot = await getDocs(q);
       
@@ -82,10 +68,13 @@ export class GearService {
         throw new Error('Gear not found or unauthorized');
       }
 
-      await updateDoc(docRef, {
+      const sanitizedUpdates = {
         ...updates,
+        images: Array.isArray(updates.images) ? updates.images : [],
         updatedAt: Timestamp.now()
-      });
+      };
+
+      await updateDoc(docRef, sanitizedUpdates);
     } catch (error) {
       console.error('Error updating gear:', error);
       throw error;
@@ -95,34 +84,126 @@ export class GearService {
   async deleteGear(userId: string, gearId: string): Promise<void> {
     try {
       const docRef = doc(this.gearCollection, gearId);
-      await deleteDoc(docRef);
-
-      // Delete associated image if it exists
-      try {
-        const imageRef = ref(storage, `images/${userId}/${gearId}`);
-        await deleteObject(imageRef);
-      } catch (error) {
-        // Ignore error if image doesn't exist
-        console.log('No image found to delete or error deleting image:', error);
+      const gearSnapshot = await getDoc(docRef);
+      
+      if (!gearSnapshot.exists() || gearSnapshot.data().userId !== userId) {
+        throw new Error('Gear not found or unauthorized');
       }
+
+      await deleteDoc(docRef);
+      console.log('Successfully deleted gear document:', gearId);
     } catch (error) {
       console.error('Error deleting gear:', error);
       throw error;
     }
   }
 
-  async uploadImage(userId: string, gearId: string, file: File): Promise<string> {
+  private async compressImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Calculate new dimensions while maintaining aspect ratio
+          if (width > height) {
+            if (width > this.maxImageSize) {
+              height = Math.round((height * this.maxImageSize) / width);
+              width = this.maxImageSize;
+            }
+          } else {
+            if (height > this.maxImageSize) {
+              width = Math.round((width * this.maxImageSize) / height);
+              height = this.maxImageSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Convert to base64 with compression
+          const base64String = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(base64String);
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  }
+
+  async addImage(userId: string, gearId: string, file: File): Promise<BaseGear> {
     try {
-      const imageRef = ref(storage, `images/${userId}/${gearId}`);
-      await uploadBytes(imageRef, file);
-      const downloadUrl = await getDownloadURL(imageRef);
+      // Get the gear document
+      const gearRef = doc(this.gearCollection, gearId);
+      const gearSnapshot = await getDoc(gearRef);
       
-      // Update gear document with image URL
-      await this.updateGear(userId, gearId, { imageUrl: downloadUrl });
+      if (!gearSnapshot.exists() || gearSnapshot.data().userId !== userId) {
+        throw new Error('Gear not found or unauthorized');
+      }
+
+      // Convert and compress the image
+      const base64 = await this.compressImage(file);
       
-      return downloadUrl;
+      // Get the current gear data
+      const gear = this.convertToGear(gearSnapshot);
+      const images = Array.isArray(gear.images) ? [...gear.images] : [];
+      
+      // Add the new image
+      images.push(base64);
+      
+      // Update the gear document
+      await updateDoc(gearRef, {
+        images: images,
+        updatedAt: Timestamp.now()
+      });
+      
+      // Return the updated gear object
+      const updatedGearSnapshot = await getDoc(gearRef);
+      return this.convertToGear(updatedGearSnapshot);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error adding image:', error);
+      throw error;
+    }
+  }
+
+  async deleteImage(userId: string, gearId: string, index: number): Promise<BaseGear> {
+    try {
+      const gearRef = doc(this.gearCollection, gearId);
+      const gearSnapshot = await getDoc(gearRef);
+      
+      if (!gearSnapshot.exists() || gearSnapshot.data().userId !== userId) {
+        throw new Error('Gear not found or unauthorized');
+      }
+
+      const gear = this.convertToGear(gearSnapshot);
+      const images = Array.isArray(gear.images) ? [...gear.images] : [];
+      
+      if (index < 0 || index >= images.length) {
+        throw new Error('Invalid image index');
+      }
+      
+      // Remove the image at the specified index
+      images.splice(index, 1);
+      
+      // Update the gear document
+      await updateDoc(gearRef, {
+        images: images,
+        updatedAt: Timestamp.now()
+      });
+      
+      // Return the updated gear object
+      const updatedGearSnapshot = await getDoc(gearRef);
+      return this.convertToGear(updatedGearSnapshot);
+    } catch (error) {
+      console.error('Error deleting image:', error);
       throw error;
     }
   }

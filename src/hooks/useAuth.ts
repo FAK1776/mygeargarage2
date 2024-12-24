@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { 
-  User,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup, 
+  GoogleAuthProvider,
   signOut as firebaseSignOut,
-  onAuthStateChanged 
+  onAuthStateChanged,
+  User
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { useNavigate } from 'react-router-dom';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -21,18 +24,54 @@ export const useAuth = () => {
     return () => unsubscribe();
   }, []);
 
+  const signInWithGoogle = async () => {
+    try {
+      setError(null);
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
+      throw err;
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      setError(null);
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in');
+      throw err;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      setError(null);
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign up');
+      throw err;
+    }
+  };
+
   const signOut = async () => {
     try {
+      setError(null);
       await firebaseSignOut(auth);
-      navigate('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign out');
+      throw err;
     }
   };
 
   return {
     user,
     loading,
+    error,
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut
   };
 }; 

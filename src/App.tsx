@@ -1,56 +1,43 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from './config/firebase';
-import { CircularProgress, Box } from '@mui/material';
-
-import MainLayout from './components/layout/MainLayout';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
+import { useAuth } from './hooks/useAuth';
 import { Home } from './pages/Home';
-import { GearChat } from './components/gear/GearChat';
+import { Login } from './pages/Login';
+import { Navbar } from './components/layout/Navbar';
 
-// Protected Route wrapper
+// Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [user, loading] = useAuthState(auth);
+  const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <div>Loading...</div>;
   }
 
   if (!user) {
-    return <Navigate to="/register" />;
+    return <Navigate to="/login" />;
   }
 
-  return <MainLayout>{children}</MainLayout>;
+  return <>{children}</>;
 };
 
 function App() {
-  const [user] = useAuthState(auth);
+  const { user } = useAuth();
 
   return (
     <Router>
+      {user && <Navbar />}
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-        <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
-        <Route
-          path="/"
+        <Route 
+          path="/" 
           element={
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>
-          }
+          } 
         />
-        <Route
-          path="/add-gear"
-          element={
-            <ProtectedRoute>
-              <GearChat />
-            </ProtectedRoute>
-          }
+        <Route 
+          path="/login" 
+          element={user ? <Navigate to="/" /> : <Login />} 
         />
       </Routes>
     </Router>

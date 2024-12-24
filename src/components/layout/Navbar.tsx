@@ -1,89 +1,70 @@
 import React from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  IconButton, 
-  Box,
-  styled
-} from '@mui/material';
-import { 
-  Search as SearchIcon,
-  Person as PersonIcon,
-  Logout as LogoutIcon,
-  Category as CategoryIcon
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: '#ff5733', // Logo orange color
-  color: '#ffffff',
-}));
-
-const LogoContainer = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  marginRight: '2rem',
-  cursor: 'pointer',
-});
-
-const Logo = styled('img')({
-  height: '40px',
-  marginRight: '8px',
-});
-
-const Navbar = () => {
+export const Navbar = () => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
-    <StyledAppBar position="fixed">
-      <Toolbar>
-        <LogoContainer onClick={() => navigate('/')}>
-          <Logo src="/logo.png" alt="My Gear Garage" />
-          <Typography variant="h6" noWrap>
-            My Gear Garage
-          </Typography>
-        </LogoContainer>
+    <nav className="bg-[#EE5430]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-24">
+          <div className="flex items-center">
+            <img
+              src="/logo.png"
+              alt="My Gear Garage"
+              className="h-20 cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => navigate('/')}
+            />
+          </div>
 
-        <Box sx={{ flexGrow: 1, display: 'flex', gap: 2 }}>
-          <Button 
-            color="inherit" 
-            onClick={() => navigate('/')}
-          >
-            My Garage
-          </Button>
-          <Button 
-            color="inherit" 
-            onClick={() => navigate('/add-gear')}
-          >
-            Add Gear
-          </Button>
-          <Button 
-            color="inherit"
-            startIcon={<CategoryIcon />}
-            onClick={() => navigate('/categories')}
-          >
-            Categories
-          </Button>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton color="inherit" onClick={() => navigate('/search')}>
-            <SearchIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => navigate('/profile')}>
-            <PersonIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={signOut}>
-            <LogoutIcon />
-          </IconButton>
-        </Box>
-      </Toolbar>
-    </StyledAppBar>
+          <div className="flex items-center space-x-4">
+            <div className="w-64">
+              <Input
+                type="search"
+                placeholder="Search gear..."
+                className="w-full"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button 
+                onClick={() => navigate('/')}
+                variant="ghost" 
+                className="text-white hover:text-gray-200"
+              >
+                My Garage
+              </Button>
+              <Button 
+                onClick={() => navigate('/add-gear')}
+                variant="ghost" 
+                className="text-white hover:text-gray-200"
+              >
+                Add Gear
+              </Button>
+              <Button 
+                onClick={handleSignOut}
+                variant="ghost" 
+                className="text-white hover:text-gray-200"
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
   );
-};
-
-export default Navbar; 
+}; 

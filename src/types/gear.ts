@@ -2,50 +2,99 @@
 export interface BaseGear {
   id: string;
   userId: string;
-  name: string;
-  brand: string;
+  make: string;
   model: string;
-  type: GearType;
+  year?: string;
+  modelNumber?: string;
+  series?: string;
+  serialNumber?: string;
+  orientation?: string;
+  numberOfStrings?: string;
+  weight?: string;
+  description?: string;
   category?: string;
   subcategory?: string;
-  description?: string;
-  imageUrl?: string;
-  specs: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  specs?: Record<string, any>;
+  images: string[];  // Array of Base64 encoded images
 }
 
 // Enum for main gear types
 export enum GearType {
-  Guitar = 'Guitar',
-  Bass = 'Bass',
-  Amplifier = 'Amplifier',
-  Pedal = 'Pedal',
-  Microphone = 'Microphone',
-  Interface = 'Interface',
-  Other = 'Other'
+  Guitar = 'Guitar'
 }
 
-// Example of a specific gear type interface
-export interface Guitar extends BaseGear {
-  type: GearType.Guitar;
-  specs: {
-    body: {
-      type: string;
-      wood: string;
-      finish: string;
-    };
-    neck: {
-      wood: string;
-      profile: string;
-      radius: string;
-      frets: number;
-    };
-    electronics?: {
-      pickups: string[];
-      controls: string[];
-      preamp?: boolean;
-    };
+// Guitar specifications interface
+export interface GuitarSpecs {
+  // Body
+  body: {
+    shape: string;
+    type: string;
+    material: string;
+    topBack: string;
+    finish: string;
+    depth: string;
+    binding: string;
+    bracing: string;
+    cutaway: string;
+    topColor: string;
+  };
+
+  // Neck
+  neck: {
+    material: string;
+    shape: string;
+    thickness: string;
+    construction: string;
+    finish: string;
+    scaleLength: string;
+    fingerboardMaterial: string;
+    fingerboardRadius: string;
+    numberOfFrets: string;
+    fretSize: string;
+    nutMaterial: string;
+    nutWidth: string;
+    fingerboardInlays: string;
+    binding: string;
+    sideDots: string;
+  };
+
+  // Headstock
+  headstock: {
+    shape: string;
+    binding: string;
+    tuningMachines: string;
+    headplateLogo: string;
+  };
+
+  // Hardware
+  hardware: {
+    bridge: string;
+    tailpiece: string;
+    finish: string;
+    pickguard: string;
+    knobs: string;
+    strapButtons: string;
+  };
+
+  // Electronics
+  electronics: {
+    pickupSystem: string;
+    neckPickup: string;
+    bridgePickup: string;
+    pickupConfiguration: string;
+    controls: string;
+    pickupSwitching: string;
+    auxiliarySwitching: string;
+  };
+
+  // Extras
+  extras: {
+    strings: string;
+    caseOrGigBag: string;
+    modificationsRepairs: string;
+    uniqueFeatures: string;
   };
 }
 
@@ -54,102 +103,7 @@ export interface GearSearchIndex {
   gearId: string;
   type: GearType;
   searchableText: string;
-  specs: Record<string, any>;
-  category: string;
-  subcategory?: string;
+  specs: GuitarSpecs;
 }
 
-export interface GuitarSpecs {
-  body: {
-    type: string;
-    wood: string;
-    finish: string;
-  };
-  neck: {
-    wood: string;
-    profile: string;
-    radius: string;
-    frets: number;
-  };
-  electronics?: {
-    pickups: string[];
-    controls: string[];
-    preamp?: boolean;
-  };
-}
-
-export interface BassSpecs {
-  body: {
-    type: string;
-    wood: string;
-    finish: string;
-  };
-  neck: {
-    wood: string;
-    profile: string;
-    radius: string;
-    frets: number;
-  };
-  electronics: {
-    pickups: string[];
-    controls: string[];
-    preamp?: boolean;
-  };
-}
-
-export interface AmplifierSpecs {
-  type: 'tube' | 'solid-state' | 'hybrid' | 'modeling';
-  power: {
-    watts: number;
-    channels: number;
-  };
-  features: string[];
-  effects?: string[];
-}
-
-export interface PedalSpecs {
-  type: string;
-  effects: string[];
-  controls: string[];
-  bypass: 'true bypass' | 'buffered' | 'other';
-  power: {
-    voltage: number;
-    current: number;
-  };
-}
-
-export interface MicrophoneSpecs {
-  type: 'dynamic' | 'condenser' | 'ribbon' | 'other';
-  pattern: string[];
-  frequency: {
-    low: number;
-    high: number;
-  };
-  impedance: number;
-  sensitivity: string;
-}
-
-export interface InterfaceSpecs {
-  inputs: {
-    analog: number;
-    digital: number;
-    midi?: boolean;
-  };
-  outputs: {
-    analog: number;
-    digital: number;
-    midi?: boolean;
-  };
-  sampleRate: number[];
-  bitDepth: number[];
-  features: string[];
-}
-
-export type GearSpecs = 
-  | GuitarSpecs 
-  | BassSpecs 
-  | AmplifierSpecs 
-  | PedalSpecs 
-  | MicrophoneSpecs 
-  | InterfaceSpecs 
-  | Record<string, any>; 
+export type GearFormData = Omit<BaseGear, 'id' | 'userId' | 'createdAt' | 'updatedAt'>; 
