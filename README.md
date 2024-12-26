@@ -19,6 +19,12 @@ A modern web application for guitar enthusiasts to catalog and manage their guit
   - Image gallery with navigation
   - Delete unwanted images
 
+- **Modern UI Components**:
+  - Material UI integration for enhanced user interface
+  - Responsive design with Tailwind CSS
+  - Dynamic dialogs and overlays
+  - Interactive image galleries
+
 - **Search and Filter**:
   - Search across all guitar specifications
   - Filter by various attributes
@@ -28,15 +34,24 @@ A modern web application for guitar enthusiasts to catalog and manage their guit
 
 - **Frontend**:
   - React 18
-  - TypeScript
-  - Tailwind CSS
-  - Vite (build tool)
+  - TypeScript 5
+  - Tailwind CSS with animations
+  - Vite 5 (build tool)
+  - Material UI components
   - Lucide Icons
+  - Radix UI primitives
 
-- **Backend**:
+- **Backend & Services**:
   - Firebase Authentication
   - Firebase Firestore (database)
   - Firebase Storage (image storage)
+  - Firebase Admin SDK
+  - Google Cloud integration
+
+- **Development Tools**:
+  - ESLint with TypeScript support
+  - PostCSS
+  - Firebase Tools CLI
 
 ## Getting Started
 
@@ -60,7 +75,7 @@ npm install
 ```
 
 3. Create a Firebase project and configure your environment variables:
-   - Create a `.env` file in the root directory
+   - Copy `.env.example` to `.env` in the root directory
    - Add your Firebase configuration:
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
@@ -84,11 +99,12 @@ npm run dev
 
 2. Set up Firestore:
    - Create a new Firestore database
-   - Set up security rules for your collection
+   - Deploy security rules using `npm run deploy:rules`
 
 3. Configure Storage:
    - Enable Firebase Storage
-   - Set up storage rules for image uploads
+   - Configure CORS settings using the provided scripts
+   - Deploy storage rules using `npm run deploy:rules`
 
 ## Development
 
@@ -98,6 +114,7 @@ npm run dev
 src/
 ├── components/         # React components
 │   ├── gear/          # Guitar-specific components
+│   │   └── details/   # Detailed view components
 │   ├── layout/        # Layout components
 │   └── ui/            # Reusable UI components
 ├── config/            # Configuration files
@@ -116,7 +133,9 @@ src/
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
-- `npm run test` - Run tests
+- `npm run deploy` - Build and deploy to Firebase
+- `npm run deploy:hosting` - Deploy only hosting
+- `npm run deploy:rules` - Deploy Firestore and Storage rules
 
 ## Contributing
 
@@ -133,6 +152,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Built with [React](https://reactjs.org/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/) and [Material UI](https://mui.com/)
 - Icons from [Lucide](https://lucide.dev/)
+- UI Components from [Radix UI](https://www.radix-ui.com/)
 - Powered by [Firebase](https://firebase.google.com/)

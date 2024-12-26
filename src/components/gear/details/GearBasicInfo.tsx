@@ -1,5 +1,5 @@
 import React from 'react';
-import { BaseGear, GearType } from '../../../types/gear';
+import { BaseGear } from '../../../types/gear';
 import { FormField } from '../../common/FormField';
 
 interface GearBasicInfoProps {
@@ -11,14 +11,6 @@ interface GearBasicInfoProps {
 export const GearBasicInfo: React.FC<GearBasicInfoProps> = ({ gear, isEditing, onUpdate }) => {
   return (
     <div className="space-y-4">
-      <FormField
-        label="Type"
-        value={gear.type}
-        isEditing={isEditing}
-        type="select"
-        options={Object.values(GearType)}
-        onChange={(value) => onUpdate({ type: value as GearType })}
-      />
       <FormField
         label="Make"
         value={gear.make}
@@ -86,6 +78,25 @@ export const GearBasicInfo: React.FC<GearBasicInfoProps> = ({ gear, isEditing, o
         isEditing={isEditing}
         type="textarea"
         onChange={(value) => onUpdate({ description: value })}
+      />
+      <FormField
+        label="Label"
+        value={gear.label}
+        isEditing={isEditing}
+        type="textarea"
+        onChange={(value) => onUpdate({ label: value })}
+        placeholder="For commemorative or custom guitars"
+      />
+      <FormField
+        label="Pleked"
+        value={gear.pleked ? "Yes" : "No"}
+        isEditing={isEditing}
+        type="select"
+        options={[
+          { value: "false", label: "No" },
+          { value: "true", label: "Yes" }
+        ]}
+        onChange={(value) => onUpdate({ pleked: value === "true" })}
       />
     </div>
   );

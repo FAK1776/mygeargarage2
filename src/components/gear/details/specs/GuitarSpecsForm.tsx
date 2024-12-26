@@ -13,8 +13,28 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
     onUpdate({ body: { ...specs.body, ...updates } });
   };
 
+  const handleBracingUpdate = (updates: Partial<GuitarSpecs['body']['bracing']>) => {
+    handleBodyUpdate({ bracing: { ...specs.body.bracing, ...updates } });
+  };
+
+  const handleRosetteUpdate = (updates: Partial<GuitarSpecs['body']['rosette']>) => {
+    handleBodyUpdate({ rosette: { ...specs.body.rosette, ...updates } });
+  };
+
+  const handleEndpieceUpdate = (updates: Partial<GuitarSpecs['body']['endpiece']>) => {
+    handleBodyUpdate({ endpiece: { ...specs.body.endpiece, ...updates } });
+  };
+
   const handleNeckUpdate = (updates: Partial<GuitarSpecs['neck']>) => {
     onUpdate({ neck: { ...specs.neck, ...updates } });
+  };
+
+  const handleFingerboardUpdate = (updates: Partial<GuitarSpecs['neck']['fingerboard']>) => {
+    handleNeckUpdate({ fingerboard: { ...specs.neck.fingerboard, ...updates } });
+  };
+
+  const handleNutUpdate = (updates: Partial<GuitarSpecs['neck']['nut']>) => {
+    handleNeckUpdate({ nut: { ...specs.neck.nut, ...updates } });
   };
 
   const handleHeadstockUpdate = (updates: Partial<GuitarSpecs['headstock']>) => {
@@ -23,6 +43,10 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
 
   const handleHardwareUpdate = (updates: Partial<GuitarSpecs['hardware']>) => {
     onUpdate({ hardware: { ...specs.hardware, ...updates } });
+  };
+
+  const handlePickguardUpdate = (updates: Partial<GuitarSpecs['hardware']['pickguard']>) => {
+    handleHardwareUpdate({ pickguard: { ...specs.hardware.pickguard, ...updates } });
   };
 
   const handleElectronicsUpdate = (updates: Partial<GuitarSpecs['electronics']>) => {
@@ -44,6 +68,12 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
             value={specs.body?.shape}
             isEditing={isEditing}
             onChange={(value) => handleBodyUpdate({ shape: value })}
+          />
+          <FormField
+            label="Size"
+            value={specs.body?.size}
+            isEditing={isEditing}
+            onChange={(value) => handleBodyUpdate({ size: value })}
           />
           <FormField
             label="Type"
@@ -81,12 +111,21 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
             isEditing={isEditing}
             onChange={(value) => handleBodyUpdate({ binding: value })}
           />
-          <FormField
-            label="Bracing"
-            value={specs.body?.bracing}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ bracing: value })}
-          />
+          <div className="pl-4 border-l-2 border-gray-200">
+            <h4 className="text-md font-medium mb-2">Bracing</h4>
+            <FormField
+              label="Pattern"
+              value={specs.body?.bracing?.pattern}
+              isEditing={isEditing}
+              onChange={(value) => handleBracingUpdate({ pattern: value })}
+            />
+            <FormField
+              label="Shape"
+              value={specs.body?.bracing?.shape}
+              isEditing={isEditing}
+              onChange={(value) => handleBracingUpdate({ shape: value })}
+            />
+          </div>
           <FormField
             label="Cutaway"
             value={specs.body?.cutaway}
@@ -99,6 +138,36 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
             isEditing={isEditing}
             onChange={(value) => handleBodyUpdate({ topColor: value })}
           />
+          <div className="pl-4 border-l-2 border-gray-200">
+            <h4 className="text-md font-medium mb-2">Rosette</h4>
+            <FormField
+              label="Type"
+              value={specs.body?.rosette?.type}
+              isEditing={isEditing}
+              onChange={(value) => handleRosetteUpdate({ type: value })}
+            />
+            <FormField
+              label="Detail"
+              value={specs.body?.rosette?.detail}
+              isEditing={isEditing}
+              onChange={(value) => handleRosetteUpdate({ detail: value })}
+            />
+          </div>
+          <div className="pl-4 border-l-2 border-gray-200">
+            <h4 className="text-md font-medium mb-2">Endpiece</h4>
+            <FormField
+              label="Material"
+              value={specs.body?.endpiece?.material}
+              isEditing={isEditing}
+              onChange={(value) => handleEndpieceUpdate({ material: value })}
+            />
+            <FormField
+              label="Inlay"
+              value={specs.body?.endpiece?.inlay}
+              isEditing={isEditing}
+              onChange={(value) => handleEndpieceUpdate({ inlay: value })}
+            />
+          </div>
         </div>
       </div>
 
@@ -143,17 +212,50 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
             onChange={(value) => handleNeckUpdate({ scaleLength: value })}
           />
           <FormField
-            label="Fingerboard Material"
-            value={specs.neck?.fingerboardMaterial}
+            label="Heelcap"
+            value={specs.neck?.heelcap}
             isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ fingerboardMaterial: value })}
+            onChange={(value) => handleNeckUpdate({ heelcap: value })}
           />
-          <FormField
-            label="Fingerboard Radius"
-            value={specs.neck?.fingerboardRadius}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ fingerboardRadius: value })}
-          />
+          <div className="pl-4 border-l-2 border-gray-200">
+            <h4 className="text-md font-medium mb-2">Fingerboard</h4>
+            <FormField
+              label="Material"
+              value={specs.neck?.fingerboard?.material}
+              isEditing={isEditing}
+              onChange={(value) => handleFingerboardUpdate({ material: value })}
+            />
+            <FormField
+              label="Radius"
+              value={specs.neck?.fingerboard?.radius}
+              isEditing={isEditing}
+              onChange={(value) => handleFingerboardUpdate({ radius: value })}
+            />
+            <FormField
+              label="Width at 12th Fret"
+              value={specs.neck?.fingerboard?.widthAt12thFret}
+              isEditing={isEditing}
+              onChange={(value) => handleFingerboardUpdate({ widthAt12thFret: value })}
+            />
+            <FormField
+              label="Inlays"
+              value={specs.neck?.fingerboard?.inlays}
+              isEditing={isEditing}
+              onChange={(value) => handleFingerboardUpdate({ inlays: value })}
+            />
+            <FormField
+              label="Binding"
+              value={specs.neck?.fingerboard?.binding}
+              isEditing={isEditing}
+              onChange={(value) => handleFingerboardUpdate({ binding: value })}
+            />
+            <FormField
+              label="Side Dots"
+              value={specs.neck?.fingerboard?.sideDots}
+              isEditing={isEditing}
+              onChange={(value) => handleFingerboardUpdate({ sideDots: value })}
+            />
+          </div>
           <FormField
             label="Number of Frets"
             value={specs.neck?.numberOfFrets}
@@ -167,36 +269,21 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
             isEditing={isEditing}
             onChange={(value) => handleNeckUpdate({ fretSize: value })}
           />
-          <FormField
-            label="Nut Material"
-            value={specs.neck?.nutMaterial}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ nutMaterial: value })}
-          />
-          <FormField
-            label="Nut Width"
-            value={specs.neck?.nutWidth}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ nutWidth: value })}
-          />
-          <FormField
-            label="Fingerboard Inlays"
-            value={specs.neck?.fingerboardInlays}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ fingerboardInlays: value })}
-          />
-          <FormField
-            label="Binding"
-            value={specs.neck?.binding}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ binding: value })}
-          />
-          <FormField
-            label="Side Dots"
-            value={specs.neck?.sideDots}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ sideDots: value })}
-          />
+          <div className="pl-4 border-l-2 border-gray-200">
+            <h4 className="text-md font-medium mb-2">Nut</h4>
+            <FormField
+              label="Material"
+              value={specs.neck?.nut?.material}
+              isEditing={isEditing}
+              onChange={(value) => handleNutUpdate({ material: value })}
+            />
+            <FormField
+              label="Width"
+              value={specs.neck?.nut?.width}
+              isEditing={isEditing}
+              onChange={(value) => handleNutUpdate({ width: value })}
+            />
+          </div>
         </div>
       </div>
 
@@ -253,12 +340,21 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
             isEditing={isEditing}
             onChange={(value) => handleHardwareUpdate({ finish: value })}
           />
-          <FormField
-            label="Pickguard"
-            value={specs.hardware?.pickguard}
-            isEditing={isEditing}
-            onChange={(value) => handleHardwareUpdate({ pickguard: value })}
-          />
+          <div className="pl-4 border-l-2 border-gray-200">
+            <h4 className="text-md font-medium mb-2">Pickguard</h4>
+            <FormField
+              label="Type"
+              value={specs.hardware?.pickguard?.type}
+              isEditing={isEditing}
+              onChange={(value) => handlePickguardUpdate({ type: value })}
+            />
+            <FormField
+              label="Inlay"
+              value={specs.hardware?.pickguard?.inlay}
+              isEditing={isEditing}
+              onChange={(value) => handlePickguardUpdate({ inlay: value })}
+            />
+          </div>
           <FormField
             label="Knobs"
             value={specs.hardware?.knobs}
@@ -327,6 +423,12 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditi
       <div>
         <h3 className="text-lg font-semibold mb-4">Extras</h3>
         <div className="space-y-4">
+          <FormField
+            label="Recommended Strings"
+            value={specs.extras?.recommendedStrings}
+            isEditing={isEditing}
+            onChange={(value) => handleExtrasUpdate({ recommendedStrings: value })}
+          />
           <FormField
             label="Strings"
             value={specs.extras?.strings}

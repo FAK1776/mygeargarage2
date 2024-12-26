@@ -61,9 +61,10 @@ export const Wishlist = () => {
       const specs = item.specs;
       
       // Helper function to search in an object's values
-      const searchInObject = (obj: Record<string, string>) => {
+      const searchInObject = (obj: Record<string, any>) => {
+        if (!obj || typeof obj !== 'object') return false;
         return Object.values(obj).some(value => 
-          value?.toLowerCase().includes(query)
+          typeof value === 'string' && value.toLowerCase().includes(query)
         );
       };
 

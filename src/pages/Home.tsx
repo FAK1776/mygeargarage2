@@ -70,9 +70,10 @@ export const Home = () => {
         const specs = item.specs;
         
         // Helper function to search in an object's values
-        const searchInObject = (obj: Record<string, string>) => {
+        const searchInObject = (obj: Record<string, any>) => {
+          if (!obj || typeof obj !== 'object') return false;
           return Object.values(obj).some(value => 
-            value?.toLowerCase().includes(query)
+            typeof value === 'string' && value.toLowerCase().includes(query)
           );
         };
 
@@ -156,7 +157,7 @@ export const Home = () => {
               onClick={() => navigate('/add-gear')}
               className="px-4 py-2 bg-[#EE5430] hover:bg-[#EE5430]/90 text-white font-medium rounded-md"
             >
-              Add Guitar
+              Add Gear
             </button>
           </div>
 
@@ -242,7 +243,7 @@ export const Home = () => {
                   onClick={() => navigate('/add-gear')}
                   className="px-4 py-2 bg-[#EE5430] hover:bg-[#EE5430]/90 text-white font-medium rounded-md"
                 >
-                  Add Your First Guitar
+                  Add Your First Gear
                 </button>
               </>
             )}

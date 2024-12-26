@@ -49,12 +49,27 @@ export class GearService {
     await deleteDoc(gearRef);
   }
 
-  async updateGear(userId: string, gearId: string, updates: Partial<BaseGear>): Promise<void> {
-    const gearRef = doc(this.gearCollection, gearId);
-    await updateDoc(gearRef, {
-      ...updates,
-      updatedAt: new Date()
-    });
+  async updateGear(gear: BaseGear, userId?: string, gearId?: string) {
+    try {
+      // Use the provided IDs or get them from the gear object
+      const actualUserId = userId || gear.userId;
+      const actualGearId = gearId || gear.id;
+
+      if (!actualUserId || !actualGearId) {
+        throw new Error('User ID and Gear ID are required for updating gear');
+      }
+
+      const gearRef = doc(this.gearCollection, actualGearId);
+      await updateDoc(gearRef, {
+        ...gear,
+        updatedAt: new Date()
+      });
+
+      return gear;
+    } catch (error) {
+      console.error('Error updating gear:', error);
+      throw error;
+    }
   }
 
   async getUserWishlist(userId: string): Promise<BaseGear[]> {
