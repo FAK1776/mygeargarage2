@@ -1,5 +1,5 @@
 import React from 'react';
-import { BaseGear, GearStatus } from '../../types/gear';
+import { BaseGear, GearStatus, GearType } from '../../types/gear';
 import { FaGuitar, FaMicrophone, FaHeadphones, FaMusic, FaTrash } from 'react-icons/fa';
 import { GiGrandPiano, GiSpeaker } from 'react-icons/gi';
 
@@ -11,18 +11,19 @@ interface GearCardProps {
 }
 
 export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onStatusChange }) => {
-  const getIcon = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'guitar':
+  const getIcon = (type: GearType) => {
+    switch (type) {
+      case GearType.Guitar:
         return <FaGuitar size={48} />;
-      case 'microphone':
+      case GearType.Microphone:
         return <FaMicrophone size={48} />;
-      case 'headphones':
+      case GearType.Headphones:
         return <FaHeadphones size={48} />;
-      case 'speakers':
+      case GearType.Speakers:
         return <GiSpeaker size={48} />;
-      case 'piano':
+      case GearType.Piano:
         return <GiGrandPiano size={48} />;
+      case GearType.Other:
       default:
         return <FaMusic size={48} />;
     }
@@ -55,7 +56,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onS
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
-            {getIcon(gear.category)}
+            {getIcon(gear.type)}
           </div>
         )}
         

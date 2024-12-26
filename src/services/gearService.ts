@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, query, where, updateDoc, Timestamp, DocumentData, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { BaseGear, GearStatus } from '../types/gear';
+import { BaseGear, GearStatus, GearType } from '../types/gear';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../config/firebase';
 
@@ -13,6 +13,7 @@ export class GearService {
     return {
       id: doc.id,
       ...data,
+      type: data.type || GearType.Other, // Default to Other if type is not specified
       createdAt: data.createdAt?.toDate(),
       updatedAt: data.updatedAt?.toDate(),
       images: Array.isArray(data.images) ? data.images : []
@@ -33,6 +34,7 @@ export class GearService {
     const gearWithDates = {
       ...gear,
       userId,
+      type: gear.type || GearType.Other, // Default to Other if type is not specified
       createdAt: now,
       updatedAt: now,
       status: gear.status || GearStatus.Own // Default to Own if not specified

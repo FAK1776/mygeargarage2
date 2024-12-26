@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BaseGear, GearStatus, GuitarSpecs } from '../../types/gear';
+import { BaseGear, GearStatus, GuitarSpecs, GearType } from '../../types/gear';
 import { FaTimes, FaChevronLeft, FaChevronRight, FaTrash, FaUpload, FaImage, FaEdit, FaSave } from 'react-icons/fa';
 import { GearService } from '../../services/gearService';
 import { useAuth } from '../../hooks/useAuth';
@@ -116,6 +116,25 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
     if (!isEditing && (!value || value === 'N/A')) return null;
     
     if (isEditing && field) {
+      if (field === 'type') {
+        return (
+          <div className="flex justify-between py-1 border-b border-gray-100">
+            <label className="text-gray-600 min-w-[120px]">{label}:</label>
+            <select
+              value={editedGear.type}
+              onChange={(e) => setEditedGear({ ...editedGear, type: e.target.value as GearType })}
+              className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {Object.values(GearType).map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+      }
+
       if (field === 'dateAcquired' || field === 'dateSold') {
         const dateValue = editedGear[field] ? new Date(editedGear[field] as Date).toISOString().split('T')[0] : '';
         return (

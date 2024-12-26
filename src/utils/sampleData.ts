@@ -1,22 +1,21 @@
 import { GearService } from '../services/gearService';
-import { GearFormData } from '../types/gear';
+import { GearFormData, GearStatus, GearType } from '../types/gear';
 
 const sampleGuitars: GearFormData[] = [
   {
     make: "Martin",
     model: "D-28",
     year: "2020",
-    modelName: "Custom 'M/0000' Grand Auditorium Body",
     modelNumber: "C20-063285",
     series: "Custom Shop",
     serialNumber: "",
     orientation: "Right Handed",
     numberOfStrings: "6",
     weight: "",
-    images: {
-      urls: [],
-      uploadedFiles: []
-    },
+    description: "Custom 'M/0000' Grand Auditorium Body",
+    images: [],
+    status: GearStatus.Own,
+    type: GearType.Guitar,
     specs: {
       body: {
         shape: "Grand Auditorium",
@@ -82,17 +81,16 @@ const sampleGuitars: GearFormData[] = [
     make: "Gretsch",
     model: "G9220 Bobtail™",
     year: "2019",
-    modelName: "G9220 Bobtail™ Round-Neck Resonator Guitar",
     modelNumber: "2716013503",
     series: "Roots Collection",
     serialNumber: "",
     orientation: "Right Handed",
     numberOfStrings: "6",
     weight: "",
-    images: {
-      urls: [],
-      uploadedFiles: []
-    },
+    description: "G9220 Bobtail™ Round-Neck Resonator Guitar",
+    images: [],
+    status: GearStatus.Own,
+    type: GearType.Guitar,
     specs: {
       body: {
         shape: "Resonator",
@@ -158,17 +156,16 @@ const sampleGuitars: GearFormData[] = [
     make: "Fender",
     model: "Classic Player Baja Telecaster",
     year: "2018",
-    modelName: "Classic Player Baja Telecaster",
     modelNumber: "",
     series: "Classic Player",
     serialNumber: "",
     orientation: "Right Handed",
     numberOfStrings: "6",
     weight: "",
-    images: {
-      urls: [],
-      uploadedFiles: []
-    },
+    description: "Classic Player Baja Telecaster",
+    images: [],
+    status: GearStatus.Own,
+    type: GearType.Guitar,
     specs: {
       body: {
         shape: "Telecaster",
@@ -238,9 +235,9 @@ export const loadSampleData = async (userId: string) => {
   for (const guitar of sampleGuitars) {
     try {
       await gearService.addGear(userId, guitar);
-      console.log(`Added ${guitar.make} ${guitar.modelName}`);
+      console.log(`Added ${guitar.make} ${guitar.model}`);
     } catch (error) {
-      console.error(`Error adding ${guitar.make} ${guitar.modelName}:`, error);
+      console.error(`Error adding ${guitar.make} ${guitar.model}:`, error);
     }
   }
 }; 

@@ -1,6 +1,11 @@
 // Enum for main gear types
 export enum GearType {
-  Guitar = 'Guitar'
+  Guitar = 'Guitar',
+  Microphone = 'Microphone',
+  Headphones = 'Headphones',
+  Speakers = 'Speakers',
+  Piano = 'Piano',
+  Other = 'Other'
 }
 
 // Enum for gear status
@@ -91,12 +96,14 @@ export interface GearSearchIndex {
   specs: GuitarSpecs;
 }
 
-export type GearFormData = Omit<BaseGear, 'id' | 'userId' | 'createdAt' | 'updatedAt'>; 
+// GearFormData now includes all fields except id, userId, createdAt, and updatedAt
+export type GearFormData = Omit<BaseGear, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
 // Base interface for all gear types
 export interface BaseGear {
   id: string;
   userId: string;
+  type: GearType;  // Required field
   make: string;
   model: string;
   year?: string;
@@ -107,7 +114,6 @@ export interface BaseGear {
   numberOfStrings?: string;
   weight?: string;
   description?: string;
-  category?: string;
   subcategory?: string;
   createdAt: Date;
   updatedAt: Date;

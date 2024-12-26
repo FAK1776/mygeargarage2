@@ -108,11 +108,24 @@ export class OpenAIService {
         throw new Error(data.error?.message || 'Failed to suggest gear type');
       }
 
-      const suggestedType = data.choices[0].message.content.toLowerCase().trim() as GearType;
-      return suggestedType;
+      // Add null checks and validation
+      if (!data.choices?.[0]?.message?.content) {
+        throw new Error('Invalid response format from OpenAI');
+      }
+
+      const suggestedType = data.choices[0].message.content.toLowerCase().trim();
+      
+      // Validate that the suggested type is a valid GearType
+      const validTypes = ['guitar', 'bass', 'amplifier', 'pedal', 'microphone', 'interface', 'other'];
+      if (!validTypes.includes(suggestedType)) {
+        throw new Error(`Invalid gear type suggested: ${suggestedType}`);
+      }
+
+      return suggestedType as GearType;
     } catch (error) {
       console.error('Error suggesting gear type:', error);
-      throw error;
+      // Default to 'other' if there's an error
+      return GearType.Other;
     }
   }
 } 
