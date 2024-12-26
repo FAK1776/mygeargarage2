@@ -212,4 +212,15 @@ export class GearService {
       updatedAt: new Date()
     });
   }
+
+  async getGearById(gearId: string): Promise<BaseGear | null> {
+    const docRef = doc(this.gearCollection, gearId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return this.convertToGear(docSnap);
+    }
+    
+    return null;
+  }
 } 
