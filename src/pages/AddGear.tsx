@@ -155,11 +155,16 @@ export const AddGear = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+    <div className="min-h-screen bg-gray-50 pt-16 pb-16">
       <div className="max-w-3xl mx-auto px-4">
-        <h1 className="text-3xl font-light text-gray-900 mb-8">Add New Gear</h1>
+        <h1 className="text-3xl font-light text-gray-900 mb-4">Add New Gear</h1>
+        
+        <p className="text-gray-600 mb-8">
+          Add your gear by either manually entering the details or by pasting the manufacturer's specifications. 
+          The specification parser will automatically extract relevant information to save you time.
+        </p>
 
-        <div className="flex justify-center space-x-4 mb-8">
+        <div className="flex justify-start space-x-4 mb-8">
           <button
             onClick={() => setIsManualEntry(true)}
             className={`px-4 py-2 rounded transition-colors ${
@@ -178,12 +183,33 @@ export const AddGear = () => {
                 : 'bg-white text-gray-700 hover:bg-gray-100'
             }`}
           >
-            Copy and Paste Specs
+            Paste Specifications
           </button>
         </div>
 
-        {isManualEntry ? (
+        {!isManualEntry ? (
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <GearSpecParser 
+              onSpecsParsed={(specs) => {
+                setFormData(prev => ({ ...prev, ...specs }));
+                // Show success message and switch to manual entry for review
+                setIsManualEntry(true);
+                // Scroll to top of form
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} 
+            />
+          </div>
+        ) : (
           <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Add success message if coming from spec parser */}
+            {formData.make && formData.model && (
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p className="text-green-800">
+                  ✓ Successfully parsed specifications for {formData.make} {formData.model}. 
+                  Please review the details below and make any necessary adjustments before adding to your collection.
+                </p>
+              </div>
+            )}
             {/* General Information */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
               <h2 className="text-xl font-medium text-gray-900">General Information</h2>
@@ -474,13 +500,6 @@ export const AddGear = () => {
               </button>
             </div>
           </form>
-        ) : (
-          <GearSpecParser
-            onGearCreated={(gear) => {
-              navigate('/');
-            }}
-            onSwitchToManual={() => setIsManualEntry(true)}
-          />
         )}
       </div>
     </div>

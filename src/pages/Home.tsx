@@ -148,11 +148,11 @@ export const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50 pt-28 pb-16">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col space-y-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-gray-900">My Gear</h1>
+            <h1 className="text-3xl font-light text-gray-900">My Gear</h1>
             <button
               onClick={() => navigate('/add-gear')}
               className="px-4 py-2 bg-[#EE5430] hover:bg-[#EE5430]/90 text-white font-medium rounded-md"
@@ -161,7 +161,11 @@ export const Home = () => {
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
+          <p className="text-gray-600">
+            Manage your gear collection, track modifications, and keep a record of your instruments' history.
+          </p>
+
+          <div className="flex flex-col md:flex-row md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             {/* Search input */}
             <div className="flex-1 relative">
               <input
@@ -268,7 +272,6 @@ export const Home = () => {
             onClose={() => setSelectedGear(null)}
             onUpdate={(updatedGear) => {
               setGear(prev => prev.map(g => g.id === updatedGear.id ? updatedGear : g));
-              setFilteredGear(prev => prev.map(g => g.id === updatedGear.id ? updatedGear : g));
               setSelectedGear(updatedGear);
             }}
           />

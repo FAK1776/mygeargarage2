@@ -108,6 +108,7 @@ export class GeminiService {
         }
       }
 
+      IMPORTANT: Return ONLY the JSON object, with no additional text or formatting.
       Only include fields that are present in the specifications. Leave other fields as empty strings or false for boolean values.
       Here are the specifications to parse:
 
@@ -115,16 +116,20 @@ export class GeminiService {
     `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
+      console.log('Sending prompt to Gemini:', prompt);
+      const geminiResult = await this.model.generateContent(prompt);
+      const response = await geminiResult.response;
       const text = response.text();
+      console.log('Raw Gemini response:', text);
       
       // Extract JSON from the response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.error('No JSON found in response:', text);
         throw new Error('Could not parse gear specifications');
       }
 
+      console.log('Extracted JSON:', jsonMatch[0]);
       const parsedData = JSON.parse(jsonMatch[0]);
 
       // Convert the type string to GearType enum
@@ -132,13 +137,93 @@ export class GeminiService {
         type => type.toLowerCase() === parsedData.type?.toLowerCase()
       ) || GearType.Other;
 
-      return {
-        ...parsedData,
-        type: gearType,
-        specs: parsedData.specs as GuitarSpecs
+      // Ensure specs object has the correct structure
+      const specs = {
+        body: {
+          shape: parsedData.specs?.body?.shape || '',
+          type: parsedData.specs?.body?.type || '',
+          material: parsedData.specs?.body?.material || '',
+          topBack: parsedData.specs?.body?.topBack || '',
+          finish: parsedData.specs?.body?.finish || '',
+          depth: parsedData.specs?.body?.depth || '',
+          binding: parsedData.specs?.body?.binding || '',
+          bracing: parsedData.specs?.body?.bracing || '',
+          cutaway: parsedData.specs?.body?.cutaway || '',
+          topColor: parsedData.specs?.body?.topColor || ''
+        },
+        neck: {
+          material: parsedData.specs?.neck?.material || '',
+          shape: parsedData.specs?.neck?.shape || '',
+          thickness: parsedData.specs?.neck?.thickness || '',
+          construction: parsedData.specs?.neck?.construction || '',
+          finish: parsedData.specs?.neck?.finish || '',
+          scaleLength: parsedData.specs?.neck?.scaleLength || '',
+          fingerboardMaterial: parsedData.specs?.neck?.fingerboard?.material || '',
+          fingerboardRadius: parsedData.specs?.neck?.fingerboard?.radius || '',
+          numberOfFrets: parsedData.specs?.neck?.numberOfFrets || '',
+          fretSize: parsedData.specs?.neck?.fretSize || '',
+          nutMaterial: parsedData.specs?.neck?.nut?.material || '',
+          nutWidth: parsedData.specs?.neck?.nut?.width || '',
+          fingerboardInlays: parsedData.specs?.neck?.fingerboard?.inlays || '',
+          binding: parsedData.specs?.neck?.fingerboard?.binding || '',
+          sideDots: parsedData.specs?.neck?.fingerboard?.sideDots || ''
+        },
+        headstock: {
+          shape: parsedData.specs?.headstock?.shape || '',
+          binding: parsedData.specs?.headstock?.binding || '',
+          tuningMachines: parsedData.specs?.headstock?.tuningMachines || '',
+          headplateLogo: parsedData.specs?.headstock?.headplateLogo || ''
+        },
+        hardware: {
+          bridge: parsedData.specs?.hardware?.bridge || '',
+          tailpiece: parsedData.specs?.hardware?.tailpiece || '',
+          finish: parsedData.specs?.hardware?.finish || '',
+          pickguard: parsedData.specs?.hardware?.pickguard?.type || '',
+          knobs: parsedData.specs?.hardware?.knobs || '',
+          strapButtons: parsedData.specs?.hardware?.strapButtons || ''
+        },
+        electronics: {
+          pickupSystem: parsedData.specs?.electronics?.pickupSystem || '',
+          neckPickup: parsedData.specs?.electronics?.neckPickup || '',
+          bridgePickup: parsedData.specs?.electronics?.bridgePickup || '',
+          pickupConfiguration: parsedData.specs?.electronics?.pickupConfiguration || '',
+          controls: parsedData.specs?.electronics?.controls || '',
+          pickupSwitching: parsedData.specs?.electronics?.pickupSwitching || '',
+          auxiliarySwitching: parsedData.specs?.electronics?.auxiliarySwitching || ''
+        },
+        extras: {
+          strings: parsedData.specs?.extras?.strings || '',
+          caseOrGigBag: parsedData.specs?.extras?.caseOrGigBag || '',
+          modificationsRepairs: parsedData.specs?.extras?.modificationsRepairs || '',
+          uniqueFeatures: parsedData.specs?.extras?.uniqueFeatures || ''
+        }
       };
+
+      const finalResult = {
+        type: gearType,
+        make: parsedData.make || '',
+        model: parsedData.model || '',
+        year: parsedData.year || '',
+        modelNumber: parsedData.modelNumber || '',
+        series: parsedData.series || '',
+        serialNumber: parsedData.serialNumber || '',
+        orientation: parsedData.orientation || '',
+        numberOfStrings: parsedData.numberOfStrings || '',
+        weight: parsedData.weight || '',
+        description: parsedData.description || '',
+        specs
+      };
+
+      console.log('Final parsed result:', finalResult);
+      return finalResult;
     } catch (error) {
       console.error('Error parsing gear specifications:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack
+        });
+      }
       throw new Error('Failed to parse gear specifications');
     }
   }
