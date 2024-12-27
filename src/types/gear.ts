@@ -12,7 +12,7 @@ export enum GearType {
 // Enum for gear status
 export enum GearStatus {
   Own = 'own',
-  Wishlist = 'wishlist',
+  Want = 'want',
   Sold = 'sold'
 }
 

@@ -9,6 +9,8 @@ A modern web application for musicians to manage their gear collection, track ma
   - Upload and manage gear photos
   - Track detailed specifications and history
   - Organize gear by status (owned, wanted, sold)
+  - Load sample data for testing and demonstration
+  - Flexible filtering by status and specifications
 
 - **Service History**
   - Log maintenance records and modifications
@@ -21,12 +23,15 @@ A modern web application for musicians to manage their gear collection, track ma
   - Intelligent service history logging
   - "My Gear Guru" - AI chat assistant for collection insights
   - Natural language processing for maintenance records
+  - Comprehensive search across all gear specifications
 
 - **User Experience**
   - Modern, responsive design
   - Intuitive gear card interface
   - Detailed gear overlay views
   - Real-time updates and feedback
+  - Status-based filtering (Own, Want, Sold)
+  - Advanced search capabilities
 
 ## Technology Stack
 
@@ -46,6 +51,7 @@ A modern web application for musicians to manage their gear collection, track ma
   - GitHub for version control
   - Firebase Hosting
   - Staging and production environments
+  - Automated deployment workflows
 
 ## Getting Started
 
@@ -91,6 +97,24 @@ npm run deploy:staging
 npm run deploy
 ```
 
+## Testing and Development
+
+1. Sample Data
+The application includes a sample data feature that can be used to populate your collection with example guitars. This is useful for:
+- Testing the application features
+- Demonstrating the UI and functionality
+- Development and debugging
+
+To load sample data:
+1. Log in to the application
+2. Click the "Load Sample Data" button in the toolbar
+3. Sample guitars will be added to your collection
+
+The sample data includes a variety of guitars with detailed specifications:
+- Electric guitars (Fender Stratocaster, Gibson Les Paul)
+- Acoustic guitars (Martin D-28, Taylor 814ce)
+- Semi-hollow/hollow body (Gretsch Nashville)
+
 ## Project Structure
 
 ```
@@ -98,12 +122,15 @@ src/
 ├── components/         # React components
 │   ├── chat/          # Chat interface components
 │   ├── common/        # Shared components
-│   └── gear/          # Gear-related components
+│   ├── gear/          # Gear-related components
+│   ├── layout/        # Layout components
+│   └── ui/            # UI components
 ├── hooks/             # Custom React hooks
 ├── pages/             # Page components
 ├── services/          # Service integrations
 ├── types/             # TypeScript type definitions
 └── utils/             # Utility functions
+    └── sampleData.ts  # Sample data for testing
 ```
 
 ## Contributing

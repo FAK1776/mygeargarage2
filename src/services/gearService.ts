@@ -60,12 +60,29 @@ export class GearService {
       }
 
       const gearRef = doc(this.gearCollection, actualGearId);
-      await updateDoc(gearRef, {
-        ...gear,
+      
+      // Create a Firestore-safe update object
+      const updateData = {
+        make: gear.make || '',
+        model: gear.model || '',
+        type: gear.type || GearType.Other,
+        status: gear.status || GearStatus.Own,
+        year: gear.year || '',
+        modelNumber: gear.modelNumber || '',
+        series: gear.series || '',
+        serialNumber: gear.serialNumber || '',
+        orientation: gear.orientation || '',
+        numberOfStrings: gear.numberOfStrings || '',
+        weight: gear.weight || '',
+        description: gear.description || '',
+        specs: gear.specs || {},
+        serviceHistory: gear.serviceHistory || [],
+        images: gear.images || [],
         updatedAt: new Date()
-      });
+      };
 
-      return gear;
+      await updateDoc(gearRef, updateData);
+      return { ...gear, ...updateData };
     } catch (error) {
       console.error('Error updating gear:', error);
       throw error;

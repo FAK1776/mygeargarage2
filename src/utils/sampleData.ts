@@ -1,243 +1,134 @@
 import { GearService } from '../services/gearService';
-import { GearFormData, GearStatus, GearType } from '../types/gear';
+import { GearStatus, GearType } from '../types/gear';
 
-const sampleGuitars: GearFormData[] = [
+const sampleGear = [
   {
-    make: "Martin",
-    model: "D-28",
-    year: "2020",
-    modelNumber: "C20-063285",
-    series: "Custom Shop",
-    serialNumber: "",
-    orientation: "Right Handed",
-    numberOfStrings: "6",
-    weight: "",
-    description: "Custom 'M/0000' Grand Auditorium Body",
-    images: [],
-    status: GearStatus.Own,
+    make: 'Fender',
+    model: 'Stratocaster',
     type: GearType.Guitar,
+    status: GearStatus.Own,
+    year: '2022',
     specs: {
       body: {
-        shape: "Grand Auditorium",
-        type: "Acoustic",
-        material: "East Indian Rosewood (Back and Sides), Adirondack Spruce (Top)",
-        topBack: "Spruce Top",
-        finish: "Gloss",
-        depth: "Standard",
-        binding: "Antique White",
-        bracing: "X-Brace, Scalloped",
-        cutaway: "None",
-        topColor: "Clear"
+        material: 'Alder',
+        finish: 'Sunburst',
+        type: 'Solid Body',
       },
       neck: {
-        material: "Select Hardwood",
-        shape: "Modified Low Oval",
-        thickness: "",
-        construction: "Dovetail Joint",
-        finish: "Satin",
-        scaleLength: '25.4"',
-        fingerboardMaterial: "Black Ebony",
-        fingerboardRadius: '16"',
-        numberOfFrets: "20",
-        fretSize: "Standard",
-        nutMaterial: "Bone",
-        nutWidth: '1 3/4"',
-        fingerboardInlays: "Diamonds and Squares Long",
-        binding: "None",
-        sideDots: "White"
-      },
-      headstock: {
-        shape: "Slotted with Square Slots",
-        binding: "None",
-        tuningMachines: "Schaller Nickel GrandTune",
-        headplateLogo: ""
-      },
-      hardware: {
-        bridge: "Modern Belly",
-        tailpiece: "",
-        finish: "",
-        pickguard: "Faux Tortoise",
-        knobs: "",
-        strapButtons: ""
+        material: 'Maple',
+        profile: 'Modern C',
+        fretboard: 'Rosewood',
+        frets: '22 Medium Jumbo',
       },
       electronics: {
-        pickupSystem: "None",
-        neckPickup: "",
-        bridgePickup: "",
-        pickupConfiguration: "",
-        controls: "",
-        pickupSwitching: "",
-        auxiliarySwitching: ""
+        pickups: '3x Single Coil',
+        controls: 'Volume, 2x Tone, 5-way Switch',
       },
-      extras: {
-        strings: "Authentic Acoustic Lifespan 2.0, Light Gauge",
-        caseOrGigBag: "5-Ply Hardshell Case",
-        modificationsRepairs: "",
-        uniqueFeatures: ""
-      }
-    }
+    },
   },
   {
-    make: "Gretsch",
-    model: "G9220 Bobtail™",
-    year: "2019",
-    modelNumber: "2716013503",
-    series: "Roots Collection",
-    serialNumber: "",
-    orientation: "Right Handed",
-    numberOfStrings: "6",
-    weight: "",
-    description: "G9220 Bobtail™ Round-Neck Resonator Guitar",
-    images: [],
-    status: GearStatus.Own,
+    make: 'Martin',
+    model: 'D-28',
     type: GearType.Guitar,
+    status: GearStatus.Want,
+    year: '2020',
     specs: {
       body: {
-        shape: "Resonator",
-        type: "Acoustic",
-        material: "Laminated Mahogany",
-        topBack: "",
-        finish: "Vintage Semi-Gloss",
-        depth: "Standard",
-        binding: "",
-        bracing: "Internal Sound-Well",
-        cutaway: "None",
-        topColor: "2-Color Sunburst"
+        material: 'Sitka Spruce Top, East Indian Rosewood Back and Sides',
+        finish: 'Natural',
+        type: 'Dreadnought',
+        bracing: 'Forward Shifted X-Bracing',
       },
       neck: {
-        material: "Mahogany",
-        shape: "Medium 'V'",
-        thickness: "",
-        construction: "Set-Neck",
-        finish: "Vintage Semi-Gloss",
-        scaleLength: '25"',
-        fingerboardMaterial: "Padauk",
-        fingerboardRadius: '15.75"',
-        numberOfFrets: "19",
-        fretSize: "Medium Jumbo",
-        nutMaterial: "Bone",
-        nutWidth: '1.75"',
-        fingerboardInlays: "White Dot",
-        binding: "",
-        sideDots: ""
+        material: 'Mahogany',
+        profile: 'Modified Low Oval',
+        fretboard: 'Ebony',
+        scale: '25.4"',
       },
-      headstock: {
-        shape: "1930s Gretsch® 3x3",
-        binding: "",
-        tuningMachines: "Grover® Sta-Tite™ Die-Cast",
-        headplateLogo: ""
-      },
-      hardware: {
-        bridge: "Spider - Fishman® Nashville",
-        tailpiece: "Weathered Trapeze Tailpiece",
-        finish: "Chrome",
-        pickguard: "",
-        knobs: "",
-        strapButtons: ""
-      },
-      electronics: {
-        pickupSystem: "Fishman® Nashville Resophonic Pickup",
-        neckPickup: "",
-        bridgePickup: "",
-        pickupConfiguration: "",
-        controls: "",
-        pickupSwitching: "",
-        auxiliarySwitching: ""
-      },
-      extras: {
-        strings: "D'Addario® EJ16 Phosphor Bronze, Light (.012-.053)",
-        caseOrGigBag: "Optional G6296 Gretsch® Round Neck Resonator Hardshell",
-        modificationsRepairs: "",
-        uniqueFeatures: ""
-      }
-    }
+    },
   },
   {
-    make: "Fender",
-    model: "Classic Player Baja Telecaster",
-    year: "2018",
-    modelNumber: "",
-    series: "Classic Player",
-    serialNumber: "",
-    orientation: "Right Handed",
-    numberOfStrings: "6",
-    weight: "",
-    description: "Classic Player Baja Telecaster",
-    images: [],
-    status: GearStatus.Own,
+    make: 'Gibson',
+    model: 'Les Paul Standard',
     type: GearType.Guitar,
+    status: GearStatus.Own,
+    year: '2021',
     specs: {
       body: {
-        shape: "Telecaster",
-        type: "Solidbody",
-        material: "Ash",
-        topBack: "",
-        finish: "Polyester",
-        depth: "",
-        binding: "",
-        bracing: "",
-        cutaway: "None",
-        topColor: "2-Color Sunburst"
+        material: 'Mahogany with Maple Top',
+        finish: 'Heritage Cherry Sunburst',
+        type: 'Solid Body',
       },
       neck: {
-        material: "Maple (1-Piece, Bolt-On)",
-        shape: "Soft 'V'",
-        thickness: "",
-        construction: "Bolt-On",
-        finish: "Gloss Polyurethane",
-        scaleLength: '25.5"',
-        fingerboardMaterial: "Maple",
-        fingerboardRadius: '9.5"',
-        numberOfFrets: "21",
-        fretSize: "Medium Jumbo",
-        nutMaterial: "Synthetic Bone",
-        nutWidth: '1.625"',
-        fingerboardInlays: "Black Dots",
-        binding: "",
-        sideDots: ""
-      },
-      headstock: {
-        shape: "Standard Telecaster",
-        binding: "",
-        tuningMachines: "Fender/Ping Vintage Style",
-        headplateLogo: ""
-      },
-      hardware: {
-        bridge: "Vintage Style 3-Saddle Strings-Thru-Body Tele Bridge",
-        tailpiece: "",
-        finish: "Chrome",
-        pickguard: "None",
-        knobs: "Knurled Chrome",
-        strapButtons: ""
+        material: 'Mahogany',
+        profile: '59 Rounded',
+        fretboard: 'Rosewood',
+        frets: '22 Medium Jumbo',
       },
       electronics: {
-        pickupSystem: "",
-        neckPickup: "Custom Shop Twisted Tele Single-Coil",
-        bridgePickup: "Custom Shop Broadcaster Single-Coil",
-        pickupConfiguration: "Single-Coil / Single-Coil",
-        controls: "Master Volume, Master Tone",
-        pickupSwitching: "4-Way Blade Switch + 2-Way S-1 Switch",
-        auxiliarySwitching: "S-1 Phase Selector"
+        pickups: '2x Humbucker (Burstbucker)',
+        controls: '2x Volume, 2x Tone, 3-way Switch',
       },
-      extras: {
-        strings: "Fender Super 250R (.010-.046)",
-        caseOrGigBag: "Gig Bag",
-        modificationsRepairs: "",
-        uniqueFeatures: ""
-      }
-    }
-  }
+    },
+  },
+  {
+    make: 'Gretsch',
+    model: 'G6120T Nashville',
+    type: GearType.Guitar,
+    status: GearStatus.Want,
+    year: '2023',
+    specs: {
+      body: {
+        material: 'Maple, Laminated',
+        finish: 'Orange Stain',
+        type: 'Hollow Body',
+      },
+      neck: {
+        material: 'Maple',
+        profile: 'Standard U',
+        fretboard: 'Ebony',
+        frets: '22 Medium Jumbo',
+      },
+      electronics: {
+        pickups: '2x Filter\'Tron Humbuckers',
+        controls: '2x Volume, 2x Tone, 3-way Switch',
+      },
+      hardware: {
+        bridge: 'Bigsby B6',
+        tuners: 'Gotoh Locking',
+      },
+    },
+  },
+  {
+    make: 'Taylor',
+    model: '814ce',
+    type: GearType.Guitar,
+    status: GearStatus.Want,
+    year: '2023',
+    specs: {
+      body: {
+        material: 'Indian Rosewood back/sides, Sitka Spruce top',
+        finish: 'Gloss Natural',
+        type: 'Grand Auditorium',
+        bracing: 'V-Class',
+      },
+      neck: {
+        material: 'Tropical Mahogany',
+        profile: 'Standard',
+        fretboard: 'West African Ebony',
+        scale: '25.5"',
+      },
+      electronics: {
+        system: 'Expression System 2',
+        controls: 'Volume, Bass, Treble',
+      },
+    },
+  },
 ];
 
 export const loadSampleData = async (userId: string) => {
   const gearService = new GearService();
   
-  for (const guitar of sampleGuitars) {
-    try {
-      await gearService.addGear(userId, guitar);
-      console.log(`Added ${guitar.make} ${guitar.model}`);
-    } catch (error) {
-      console.error(`Error adding ${guitar.make} ${guitar.model}:`, error);
-    }
-  }
+  // Add sample gear without clearing existing gear
+  await Promise.all(sampleGear.map(gear => gearService.addGear(userId, gear)));
 }; 

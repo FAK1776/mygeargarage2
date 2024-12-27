@@ -73,9 +73,9 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onS
             Own
           </button>
           <button
-            onClick={(e) => handleStatusClick(e, GearStatus.Wishlist)}
+            onClick={(e) => handleStatusClick(e, GearStatus.Want)}
             className={`px-3 py-1 text-sm transition-colors ${
-              gear.status === GearStatus.Wishlist 
+              gear.status === GearStatus.Want 
                 ? 'bg-blue-500 text-white' 
                 : 'hover:bg-blue-100'
             }`}
