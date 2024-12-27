@@ -73,15 +73,16 @@ export class GearService {
   }
 
   async getUserWishlist(userId: string): Promise<BaseGear[]> {
-    const wishlistRef = collection(db, 'users', userId, 'wishlist');
-    const snapshot = await getDocs(wishlistRef);
+    const q = query(collection(db, 'wishlist'), where('userId', '==', userId));
+    const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as BaseGear));
   }
 
   async addToWishlist(userId: string, gear: Omit<BaseGear, 'id'>): Promise<BaseGear> {
-    const wishlistRef = collection(db, 'users', userId, 'wishlist');
+    const wishlistRef = collection(db, 'wishlist');
     const docRef = await addDoc(wishlistRef, {
       ...gear,
+      userId,
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -89,12 +90,12 @@ export class GearService {
   }
 
   async deleteWishlistItem(userId: string, gearId: string): Promise<void> {
-    const wishlistRef = doc(db, 'users', userId, 'wishlist', gearId);
+    const wishlistRef = doc(db, 'wishlist', gearId);
     await deleteDoc(wishlistRef);
   }
 
   async updateWishlistItem(userId: string, gearId: string, updates: Partial<BaseGear>): Promise<void> {
-    const wishlistRef = doc(db, 'users', userId, 'wishlist', gearId);
+    const wishlistRef = doc(db, 'wishlist', gearId);
     await updateDoc(wishlistRef, {
       ...updates,
       updatedAt: new Date()

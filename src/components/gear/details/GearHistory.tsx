@@ -72,8 +72,15 @@ export const GearHistory: React.FC<GearHistoryProps> = ({ gear, isEditing, onUpd
   const handleSaveEdit = () => {
     if (!editedRecord) return;
 
+    // Ensure the date is properly formatted
+    const formattedRecord = {
+      ...editedRecord,
+      date: editedRecord.date ? new Date(editedRecord.date.getTime()) : new Date(),
+      type: editedRecord.tags.join(', ')
+    };
+
     const updatedHistory = gear.serviceHistory?.map(record =>
-      record.id === editedRecord.id ? editedRecord : record
+      record.id === editedRecord.id ? formattedRecord : record
     ) || [];
 
     onUpdate({ serviceHistory: updatedHistory });
@@ -172,9 +179,12 @@ export const GearHistory: React.FC<GearHistoryProps> = ({ gear, isEditing, onUpd
                   isEditing={true}
                   onChange={(value) => {
                     if (!editedRecord) return;
+                    // Create date at noon to avoid timezone issues
+                    const [year, month, day] = value.split('-').map(Number);
+                    const newDate = new Date(year, month - 1, day, 12);
                     setEditedRecord({
                       ...editedRecord,
-                      date: new Date(value)
+                      date: newDate
                     });
                   }}
                 />

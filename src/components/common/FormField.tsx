@@ -60,7 +60,18 @@ export const FormField: React.FC<FormFieldProps> = ({
     }
 
     if (type === 'date') {
-      const dateValue = value ? new Date(value).toISOString().split('T')[0] : '';
+      let dateValue = '';
+      if (value) {
+        try {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            dateValue = date.toISOString().split('T')[0];
+          }
+        } catch (e) {
+          console.error('Invalid date value:', value);
+        }
+      }
+      
       return (
         <div className="flex justify-between py-1 border-b border-gray-100">
           <label className="text-gray-600 min-w-[120px]">{label}:</label>
@@ -68,8 +79,13 @@ export const FormField: React.FC<FormFieldProps> = ({
             type="date"
             value={dateValue}
             onChange={(e) => {
-              const newDate = e.target.value ? new Date(e.target.value) : undefined;
-              onChange(newDate);
+              if (e.target.value) {
+                const [year, month, day] = e.target.value.split('-').map(Number);
+                const newDate = new Date(year, month - 1, day, 12);
+                onChange(newDate);
+              } else {
+                onChange(undefined);
+              }
             }}
             className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

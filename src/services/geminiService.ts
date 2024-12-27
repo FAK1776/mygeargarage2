@@ -230,25 +230,23 @@ export class GeminiService {
 
   async parseGearHistory(input: string, gear: BaseGear) {
     try {
-      const currentYear = new Date().getFullYear();
       const today = new Date();
-      // Format today's date in local timezone
-      const todayFormatted = today.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }).split('/').reverse().join('-');
+      today.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+      
+      // Get current year and format today's date
+      const currentYear = today.getFullYear();
+      const todayFormatted = today.toISOString().split('T')[0];
 
       const prompt = `You are a musical gear expert. Parse the following text about a ${gear.type} (${gear.make} ${gear.model}) and extract information about service, maintenance, modifications, or ownership changes.
 
 Return ONLY a JSON object (no markdown formatting, no code blocks) with this structure:
 {
   "date": "extracted date in YYYY-MM-DD format. IMPORTANT RULES FOR DATES:
-    - For specific dates like 'December 7th', use EXACTLY that date with ${currentYear} as the year
-    - Be precise with dates - December 7th must be '${currentYear}-12-07'
-    - Never change or approximate the date mentioned
-    - For relative dates: 'today' = ${todayFormatted}
-    - For 'yesterday', subtract exactly one day from today
+    - Today is ${todayFormatted}
+    - For relative dates like 'last Monday', calculate the exact date relative to today (${todayFormatted})
+    - For 'yesterday', use exactly one day before today
+    - For specific dates like 'December 7th', use that exact date with ${currentYear}
+    - For past dates like 'last week' or 'two days ago', calculate precisely from today
     - Default to today's date ONLY if no date is mentioned at all",
   "description": "detailed description of what was done",
   "provider": "service provider or person who did the work",
@@ -257,33 +255,26 @@ Return ONLY a JSON object (no markdown formatting, no code blocks) with this str
   "notes": "additional notes or context"
 }
 
+Examples of date handling:
+1. "last Monday" = the most recent Monday before today
+2. "yesterday" = exactly one day before today
+3. "last week" = exactly 7 days before today
+4. "two days ago" = exactly 2 days before today
+5. "December 7th" = ${currentYear}-12-07
+
 Guidelines for parsing:
 1. For dates:
-   - EXACT PRECISION IS REQUIRED
-   - When someone says 'December 7th', the date MUST be '${currentYear}-12-07'
-   - Never change the day number that was mentioned
-   - Use the current year (${currentYear}) unless a specific year was mentioned
+   - Calculate relative dates (like "last Monday") based on today (${todayFormatted})
+   - Never change explicitly mentioned dates
    - Include leading zeros for single-digit months and days
-   - DO NOT adjust dates for timezones - use exactly the date mentioned
+   - Use noon (12:00) for all times to avoid timezone issues
 2. For tags:
    - Use 'service' for maintenance, repairs, setups, adjustments
    - Use 'modification' for permanent changes, upgrades, replacements
    - Use 'ownership' for buying, selling, trading
-   - Multiple tags can apply (e.g., both 'service' and 'modification' for a setup that includes new parts)
 3. For costs:
    - Extract any mentioned prices
    - Include only the numeric value
-
-Example input: "I bought this on December 7th for $350"
-Example output (no markdown, no code blocks):
-{
-  "date": "${currentYear}-12-07",
-  "description": "Purchased guitar",
-  "provider": null,
-  "cost": 350,
-  "tags": ["ownership"],
-  "notes": "Initial purchase"
-}
 
 IMPORTANT: Return ONLY the JSON object, with no additional text or formatting.
 
@@ -293,28 +284,30 @@ Input text: "${input}"`;
       const response = result.response;
       const text = response.text();
       
-      // Clean up the response text - remove any markdown formatting
+      // Clean up the response text
       const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
       
       try {
         // Parse the response into a record
         const record = JSON.parse(cleanText);
         
-        // Convert date string to Date object, preserving the exact date
+        // Convert date string to Date object
         if (record.date) {
           try {
-            // Parse the date string and create a date object in local timezone
+            // Parse the date string and create a date object
             const [year, month, day] = record.date.split('-').map(Number);
-            record.date = new Date(year, month - 1, day, 12); // Use noon to avoid timezone issues
+            const date = new Date(year, month - 1, day, 12, 0, 0, 0); // Use noon to avoid timezone issues
             
-            if (isNaN(record.date.getTime())) {
-              record.date = new Date(); // Fallback to current date if parsing fails
+            if (isNaN(date.getTime())) {
+              record.date = today;
+            } else {
+              record.date = date;
             }
           } catch {
-            record.date = new Date(); // Fallback to current date if parsing fails
+            record.date = today;
           }
         } else {
-          record.date = new Date();
+          record.date = today;
         }
 
         // Ensure tags array exists
@@ -336,6 +329,59 @@ Input text: "${input}"`;
     } catch (error) {
       console.error('Error parsing gear history:', error);
       throw new Error('Failed to parse gear history. Please try again with more specific information.');
+    }
+  }
+
+  async queryCollection(query: string, gear: BaseGear[], wishlist: BaseGear[]) {
+    try {
+      const collectionContext = `
+You are a knowledgeable and friendly guitar collection assistant. You should respond in a natural, conversational way while being precise about the details. Here's the current state of the collection:
+
+Currently Owned Gear (${gear.filter(g => g.status === 'own').length} items):
+${gear.filter(g => g.status === 'own').map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})
+  * Type: ${item.type}
+  * Color/Finish: ${item.specs?.body?.finish || 'Not specified'}
+  * Description: ${item.description || 'Not specified'}
+  * Service History: ${(item.serviceHistory || []).map(record => 
+      `\n    - ${new Date(record.date).toLocaleDateString()}: ${record.description}`
+    ).join('')}
+`).join('\n')}
+
+Want List (${gear.filter(g => g.status === 'want').length} items):
+${gear.filter(g => g.status === 'want').map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})
+  * Type: ${item.type}
+  * Color/Finish: ${item.specs?.body?.finish || 'Not specified'}
+  * Description: ${item.description || 'Not specified'}
+`).join('\n')}
+
+Previously Owned/Sold (${gear.filter(g => g.status === 'sold').length} items):
+${gear.filter(g => g.status === 'sold').map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})
+  * Type: ${item.type}
+  * Color/Finish: ${item.specs?.body?.finish || 'Not specified'}
+  * Description: ${item.description || 'Not specified'}
+`).join('\n')}
+
+Instructions for responding:
+1. Be conversational and friendly while maintaining accuracy
+2. Always distinguish between currently owned instruments and those on the want list or previously sold
+3. When answering questions about features or characteristics:
+   - First mention what you find in the currently owned collection
+   - Then mention any relevant items from the want list
+   - Finally, mention any relevant previously owned items
+4. For questions about modifications or service history, focus on currently owned instruments unless specifically asked about others
+5. Use natural language and complete sentences
+
+For example, if asked "Do I have any black guitars?", respond like:
+"No, you don't currently own any black guitars. However, I see that the Martin D-35 Johnny Cash model on your want list is black."
+
+Question: ${query}`;
+
+      const result = await this.model.generateContent(collectionContext);
+      const response = result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Error querying collection:', error);
+      throw new Error('Failed to analyze collection. Please try again.');
     }
   }
 }

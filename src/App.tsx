@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Home } from './pages/Home';
+import { MyGear } from './pages/MyGear';
 import { Login } from './pages/Login';
 import { AddGear } from './pages/AddGear';
 import { Navbar } from './components/layout/Navbar';
@@ -14,7 +14,7 @@ function App() {
       {user && <Navbar />}
       <Routes>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-        <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/" element={user ? <MyGear /> : <Navigate to="/login" />} />
         <Route path="/add-gear" element={user ? <AddGear /> : <Navigate to="/login" />} />
       </Routes>
     </Router>

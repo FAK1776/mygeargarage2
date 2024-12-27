@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "my-gear-garage"
-  }
+  },
+  "targets": {
+    "my-gear-garage": {
+      "hosting": {
+        "production": [
+          "my-gear-garage"
+        ],
+        "staging": [
+          "staging-my-gear-garage"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
