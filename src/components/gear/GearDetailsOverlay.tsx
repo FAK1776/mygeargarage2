@@ -45,8 +45,8 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, on
   }, [handleClose]);
 
   const handleSave = async () => {
-    if (onUpdate) {
-      await gearService.updateGear(editedGear);
+    if (onUpdate && user) {
+      await gearService.updateGear(editedGear, user.uid);
       onUpdate(editedGear);
     }
     setIsEditing(false);

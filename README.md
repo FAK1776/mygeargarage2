@@ -1,21 +1,23 @@
 # MyGearGarage
 
-A modern web application for guitar enthusiasts to catalog and manage their guitar collection. Built with React, TypeScript, and Firebase.
+A modern web application for musicians to catalog and manage their gear collection. Built with React, TypeScript, and Firebase.
 
 ## Features
 
-- **Detailed Guitar Specifications**: Track comprehensive details about each guitar including:
-  - General information (make, model, serial number)
-  - Body specifications
-  - Neck specifications
-  - Hardware details
-  - Electronics
-  - Additional information
+- **Intelligent Gear Parsing**:
+  - Paste manufacturer specifications and let AI parse the details
+  - Automatic categorization and organization
+  - Support for multiple gear types (Guitars, Basses, etc.)
+
+- **Comprehensive Gear Management**:
+  - Track detailed specifications for each instrument
+  - Manage ownership status (Own, Want, Sold)
+  - Record modifications and service history
+  - Price tracking and valuation
 
 - **Image Management**:
-  - Upload multiple photos per guitar
+  - Upload multiple photos per instrument
   - Support for drag-and-drop uploads
-  - Add images via URL
   - Image gallery with navigation
   - Delete unwanted images
 
@@ -26,8 +28,8 @@ A modern web application for guitar enthusiasts to catalog and manage their guit
   - Interactive image galleries
 
 - **Search and Filter**:
-  - Search across all guitar specifications
-  - Filter by various attributes
+  - Search across all gear specifications
+  - Filter by ownership status
   - Quick access to your collection
 
 ## Technology Stack
@@ -40,6 +42,10 @@ A modern web application for guitar enthusiasts to catalog and manage their guit
   - Material UI components
   - Lucide Icons
   - Radix UI primitives
+
+- **AI Integration**:
+  - Google Gemini Pro for specification parsing
+  - Natural language processing for gear details
 
 - **Backend & Services**:
   - Firebase Authentication
@@ -60,13 +66,14 @@ A modern web application for guitar enthusiasts to catalog and manage their guit
 - Node.js (v16 or higher)
 - npm or yarn
 - Firebase account
+- Google Cloud account (for Gemini API)
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/mygeargarage.git
-cd mygeargarage
+git clone https://github.com/FAK1776/mygeargarage2.git
+cd mygeargarage2
 ```
 
 2. Install dependencies:
@@ -76,7 +83,7 @@ npm install
 
 3. Create a Firebase project and configure your environment variables:
    - Copy `.env.example` to `.env` in the root directory
-   - Add your Firebase configuration:
+   - Add your Firebase and Google Cloud configuration:
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -84,6 +91,7 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_GOOGLE_AI_API_KEY=your_gemini_api_key
 ```
 
 4. Start the development server:
@@ -113,7 +121,7 @@ npm run dev
 ```
 src/
 ├── components/         # React components
-│   ├── gear/          # Guitar-specific components
+│   ├── gear/          # Gear-specific components
 │   │   └── details/   # Detailed view components
 │   ├── layout/        # Layout components
 │   └── ui/            # Reusable UI components
@@ -156,3 +164,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Icons from [Lucide](https://lucide.dev/)
 - UI Components from [Radix UI](https://www.radix-ui.com/)
 - Powered by [Firebase](https://firebase.google.com/)
+- AI features powered by [Google Gemini](https://deepmind.google/technologies/gemini/)

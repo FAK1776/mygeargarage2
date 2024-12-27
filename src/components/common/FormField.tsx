@@ -1,14 +1,20 @@
 import React from 'react';
 import { GearType } from '../../types/gear';
 
+interface Option {
+  value: string;
+  label: string;
+}
+
 interface FormFieldProps {
   label: string;
   value: any;
   field?: string;
   isEditing?: boolean;
   type?: 'text' | 'select' | 'date' | 'number' | 'textarea';
-  options?: string[];
+  options?: (string | Option)[];
   onChange?: (value: any) => void;
+  placeholder?: string;
 }
 
 export const FormField: React.FC<FormFieldProps> = ({ 
@@ -18,7 +24,8 @@ export const FormField: React.FC<FormFieldProps> = ({
   isEditing = false, 
   type = 'text',
   options = [],
-  onChange 
+  onChange,
+  placeholder
 }) => {
   if (!isEditing && (!value || value === 'N/A')) return null;
 
@@ -32,11 +39,21 @@ export const FormField: React.FC<FormFieldProps> = ({
             onChange={(e) => onChange(e.target.value)}
             className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
+            {options.map((option) => {
+              if (typeof option === 'string') {
+                return (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                );
+              } else {
+                return (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                );
+              }
+            })}
           </select>
         </div>
       );
@@ -84,6 +101,7 @@ export const FormField: React.FC<FormFieldProps> = ({
             onChange={(e) => onChange(e.target.value)}
             className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
+            placeholder={placeholder}
           />
         </div>
       );
@@ -97,6 +115,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
           className="text-right flex-1 ml-4 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder={placeholder}
         />
       </div>
     );
