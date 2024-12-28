@@ -8,30 +8,43 @@ A modern web application for musicians to manage their gear collection, track ma
   - Add and manage musical instruments and equipment
   - Upload and manage gear photos
   - Track detailed specifications and history
-  - Organize gear by status (owned, wanted, sold)
+  - Organize gear by status (Own, Want, Sold)
   - Load sample data for testing and demonstration
-  - Flexible filtering by status and specifications
+  - Flexible filtering and search capabilities
 
-- **Service History**
-  - Log maintenance records and modifications
-  - Track service dates, providers, and costs
-  - Support for relative date inputs (e.g., "last Monday")
-  - Categorize entries as service, modification, or ownership changes
+- **Status Management**
+  - Global filtering to view All/Own/Want/Sold gear
+  - Individual status toggles on each gear card
+  - Visual status indicators with color coding
+    - Green for Owned gear
+    - Blue for Wanted gear
+    - Gray for Sold gear
+
+- **Profile and Analytics**
+  - Comprehensive collection overview
+  - Statistics by gear type and brand
+  - AI-generated gear stories with multiple writing styles
+  - Collection insights and analysis
+  - Historical tracking of collection evolution
+
+- **Search and Filter**
+  - Comprehensive search across all specifications
+  - Filter by gear status (All/Own/Want/Sold)
+  - Real-time search results
+  - Search through specifications and details
 
 - **Smart Features**
-  - AI-powered gear specification parser
-  - Intelligent service history logging
-  - "My Gear Guru" - AI chat assistant for collection insights
-  - Natural language processing for maintenance records
-  - Comprehensive search across all gear specifications
+  - AI-powered gear stories and insights
+  - Multiple narrative styles (Casual, Technical, Historical, Humorous, Poetic)
+  - Collection analysis and pattern recognition
+  - Personalized gear journey narratives
 
 - **User Experience**
   - Modern, responsive design
   - Intuitive gear card interface
   - Detailed gear overlay views
   - Real-time updates and feedback
-  - Status-based filtering (Own, Want, Sold)
-  - Advanced search capabilities
+  - Comprehensive FAQ and support resources
 
 ## Technology Stack
 
@@ -45,7 +58,7 @@ A modern web application for musicians to manage their gear collection, track ma
   - Firebase Authentication
   - Firebase Firestore for data storage
   - Firebase Storage for image handling
-  - Google AI (Gemini Pro) for natural language processing
+  - Google AI (Gemini Pro) for story generation and insights
 
 - **Development & Deployment**
   - GitHub for version control
@@ -123,15 +136,31 @@ src/
 │   ├── chat/          # Chat interface components
 │   ├── common/        # Shared components
 │   ├── gear/          # Gear-related components
-│   ├── layout/        # Layout components
+│   ├── layout/        # Layout components (Navbar, Footer, FAQ)
 │   └── ui/            # UI components
 ├── hooks/             # Custom React hooks
 ├── pages/             # Page components
+│   ├── MyGear.tsx     # Main gear management page
+│   ├── Profile.tsx    # User profile and analytics
+│   └── AddGear.tsx    # Gear addition form
 ├── services/          # Service integrations
+│   ├── gearService.ts # Gear data management
+│   ├── storyService.ts# Story generation service
+│   └── llmService.ts  # LLM integration service
 ├── types/             # TypeScript type definitions
 └── utils/             # Utility functions
-    └── sampleData.ts  # Sample data for testing
 ```
+
+## Recent Updates
+
+- Added AI-powered gear story generation with multiple writing styles
+- Implemented collection insights and analytics
+- Added comprehensive FAQ section
+- Enhanced profile page with collection statistics
+- Improved footer with documentation links
+- Added story saving functionality
+- Enhanced status filtering with "All" option
+- Improved component organization and reusability
 
 ## Contributing
 
