@@ -9,7 +9,9 @@ import { CollectionChat } from '../components/chat/CollectionChat';
 import { Search } from 'lucide-react';
 import { loadSampleData } from '../utils/sampleData';
 import { useGearFilters } from '../hooks/useGearFilters';
+import { useGearSort } from '../hooks/useGearSort';
 import { StatusToggle } from '../components/gear/StatusToggle';
+import { SortDropdown } from '../components/ui/sort-dropdown';
 
 export const MyGear = () => {
   const { user } = useAuth();
@@ -27,6 +29,13 @@ export const MyGear = () => {
     statusFilter,
     setStatusFilter,
   } = useGearFilters({ gear });
+
+  const {
+    sortedGear,
+    currentSort,
+    setCurrentSort,
+    sortOptions
+  } = useGearSort({ gear: filteredGear });
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; gearId: string | null }>({
     isOpen: false,
@@ -66,8 +75,6 @@ export const MyGear = () => {
 
   const handleGearDelete = async (gearId: string) => {
     if (!user) return;
-    
-    console.log('Attempting to delete gear:', gearId);
     setDeleteConfirmation({ isOpen: true, gearId });
   };
 
@@ -75,13 +82,8 @@ export const MyGear = () => {
     if (!user || !deleteConfirmation.gearId) return;
     
     try {
-      console.log('User confirmed deletion');
       await gearService.deleteGear(user.uid, deleteConfirmation.gearId);
-      console.log('Successfully deleted gear from Firestore');
-      setGear(prev => {
-        console.log('Updating gear state, removing:', deleteConfirmation.gearId);
-        return prev.filter(g => g.id !== deleteConfirmation.gearId);
-      });
+      setGear(prev => prev.filter(g => g.id !== deleteConfirmation.gearId));
     } catch (error) {
       console.error('Error deleting gear:', error);
     } finally {
@@ -90,7 +92,6 @@ export const MyGear = () => {
   };
 
   const handleCancelDelete = () => {
-    console.log('User cancelled deletion');
     setDeleteConfirmation({ isOpen: false, gearId: null });
   };
 
@@ -161,11 +162,19 @@ export const MyGear = () => {
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EE5430]"
               />
             </div>
-            <StatusToggle
-              currentStatus={statusFilter}
-              onStatusChange={setStatusFilter}
-              className="border border-gray-200"
-            />
+            <div className="flex gap-4">
+              <SortDropdown
+                options={sortOptions}
+                currentSort={currentSort}
+                onSortChange={setCurrentSort}
+                className="w-48"
+              />
+              <StatusToggle
+                currentStatus={statusFilter}
+                onStatusChange={setStatusFilter}
+                className="border border-gray-200"
+              />
+            </div>
           </div>
         </div>
 
@@ -173,7 +182,7 @@ export const MyGear = () => {
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EE5430] mx-auto"></div>
           </div>
-        ) : filteredGear.length === 0 ? (
+        ) : sortedGear.length === 0 ? (
           <div className="text-center py-12">
             {searchQuery || statusFilter !== 'all' ? (
               <p className="text-gray-500 mb-4">No guitars match your criteria.</p>
@@ -191,7 +200,7 @@ export const MyGear = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredGear.map(item => (
+            {sortedGear.map(item => (
               <GearCard
                 key={item.id}
                 gear={item}

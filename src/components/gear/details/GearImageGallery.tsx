@@ -112,6 +112,20 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({ gear, onUpda
               >
                 <FaChevronLeft size={24} />
               </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-white hover:text-blue-400 transition-colors"
+                >
+                  <FaUpload size={20} />
+                </button>
+                <button
+                  onClick={handleDeleteImage}
+                  className="p-2 text-white hover:text-red-400 transition-colors"
+                >
+                  <FaTrash size={20} />
+                </button>
+              </div>
               <button
                 onClick={nextImage}
                 className="p-2 text-white hover:text-blue-400 transition-colors"
@@ -120,13 +134,15 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({ gear, onUpda
                 <FaChevronRight size={24} />
               </button>
             </div>
-            <button
-              onClick={handleDeleteImage}
-              className="absolute top-2 right-2 p-2 text-white hover:text-red-400 transition-colors"
-            >
-              <FaTrash size={20} />
-            </button>
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
         </>
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">

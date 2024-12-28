@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BaseGear } from '../../types/gear';
 import { FaTimes, FaEdit, FaSave } from 'react-icons/fa';
 import { GearService } from '../../services/gearService';
@@ -15,111 +15,129 @@ interface GearDetailsOverlayProps {
   onUpdate?: (gear: BaseGear) => void;
 }
 
-export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({ gear, onClose, onUpdate }) => {
-  const { user } = useAuth();
-  const gearService = new GearService();
+export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
+  gear,
+  onClose,
+  onUpdate,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedGear, setEditedGear] = useState<BaseGear>(gear);
-
-  const handleClose = useCallback(async () => {
-    // Save any pending changes before closing
-    if (onUpdate && JSON.stringify(gear) !== JSON.stringify(editedGear)) {
-      await gearService.updateGear(editedGear);
-      onUpdate(editedGear);
-    }
-    onClose();
-  }, [gear, editedGear, onUpdate, onClose, gearService]);
+  const { user } = useAuth();
+  const gearService = new GearService();
 
   useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleClose();
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
       }
     };
 
-    window.addEventListener('keydown', handleEscapeKey);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
-    return () => {
-      window.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [handleClose]);
-
-  const handleSave = async () => {
-    if (onUpdate && user) {
-      await gearService.updateGear(editedGear, user.uid);
-      onUpdate(editedGear);
+  const handleUpdate = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      await gearService.updateGear(editedGear);
+      onUpdate?.(editedGear);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating gear:', error);
     }
-    setIsEditing(false);
-  };
+  }, [editedGear, user, onUpdate]);
 
-  const handleGearUpdate = (updatedGear: BaseGear) => {
-    setEditedGear(updatedGear);
-  };
-
-  const handleFieldUpdate = (updates: Partial<BaseGear>) => {
+  const handleGearUpdate = (updates: Partial<BaseGear>) => {
     setEditedGear(prev => ({ ...prev, ...updates }));
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      style={{ backdropFilter: 'blur(4px)' }}
-    >
-      <div 
-        className="bg-white rounded-lg w-full max-w-7xl max-h-[90vh] overflow-y-auto relative animate-in fade-in slide-in-from-bottom-4 duration-300"
-      >
-        <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b flex justify-between items-center">
-          <button
-            onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <FaTimes size={24} />
-          </button>
-          <div className="flex gap-2">
-            {isEditing ? (
-              <button
-                onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-              >
-                <FaSave /> Save
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                <FaEdit /> Edit
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="p-6">
-          <div className="grid grid-cols-12 gap-8">
-            {/* Left Column - Images and History */}
-            <div className="col-span-12 lg:col-span-5 space-y-8">
-              <GearImageGallery gear={editedGear} onUpdate={handleGearUpdate} />
+    <div className="fixed inset-0 bg-black/50 z-50">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white w-full max-w-4xl rounded-lg max-h-[90vh] flex flex-col">
+          {/* Sticky Header */}
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm rounded-t-lg">
+            <div className="flex items-center justify-between px-6 py-4">
               <div>
-                <h2 className="text-xl font-medium text-gray-900 mb-4">History</h2>
-                <GearHistory gear={editedGear} isEditing={isEditing} onUpdate={handleFieldUpdate} />
+                <h2 className="text-2xl font-medium text-gray-900">
+                  {editedGear.make} {editedGear.model}
+                  {editedGear.year && <span className="ml-2 text-gray-500">({editedGear.year})</span>}
+                </h2>
+              </div>
+              <div className="flex items-center gap-4">
+                {!isEditing && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    <FaEdit className="w-5 h-5" />
+                  </button>
+                )}
+                {isEditing && (
+                  <button
+                    onClick={handleUpdate}
+                    className="text-green-600 hover:text-green-700 transition-colors"
+                  >
+                    <FaSave className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Right Column - All Specifications */}
-            <div className="col-span-12 lg:col-span-7 space-y-8">
-              <div>
-                <h2 className="text-xl font-medium text-gray-900 mb-4">Basic Information</h2>
-                <GearBasicInfo gear={editedGear} isEditing={isEditing} onUpdate={handleFieldUpdate} />
-              </div>
-              
-              <div>
-                <h2 className="text-xl font-medium text-gray-900 mb-4">Price Information</h2>
-                <GearPriceInfo gear={editedGear} isEditing={isEditing} onUpdate={handleFieldUpdate} />
-              </div>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-8">
+                  <div>
+                    <GearImageGallery gear={editedGear} isEditing={isEditing} onUpdate={handleGearUpdate} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">History</h3>
+                    <GearHistory
+                      gear={editedGear}
+                      isEditing={isEditing}
+                      onUpdate={handleGearUpdate}
+                    />
+                  </div>
+                </div>
 
-              <div>
-                <h2 className="text-xl font-medium text-gray-900 mb-4">Specifications</h2>
-                <GearSpecs gear={editedGear} isEditing={isEditing} onUpdate={handleFieldUpdate} />
+                {/* Right Column */}
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                    <GearBasicInfo
+                      gear={editedGear}
+                      isEditing={isEditing}
+                      onUpdate={handleGearUpdate}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Price Information</h3>
+                    <GearPriceInfo
+                      gear={editedGear}
+                      isEditing={isEditing}
+                      onUpdate={handleGearUpdate}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Specifications</h3>
+                    <GearSpecs
+                      gear={editedGear}
+                      isEditing={isEditing}
+                      onUpdate={handleGearUpdate}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

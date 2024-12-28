@@ -6,7 +6,7 @@ A modern web application for musicians to manage their gear collection, track ma
 
 - **Gear Management**
   - Add and manage musical instruments and equipment
-  - Upload and manage gear photos
+  - Upload and manage multiple gear photos with gallery view
   - Track detailed specifications and history
   - Organize gear by status (Own, Want, Sold)
   - Load sample data for testing and demonstration
@@ -28,31 +28,13 @@ A modern web application for musicians to manage their gear collection, track ma
     - Blue for Wanted gear
     - Gray for Sold gear
 
-- **Profile and Analytics**
-  - Comprehensive collection overview
-  - Statistics by gear type and brand
-  - AI-generated gear stories with multiple writing styles
-  - Collection insights and analysis
-  - Historical tracking of collection evolution
-
-- **Search and Filter**
-  - Comprehensive search across all specifications
-  - Filter by gear status (All/Own/Want/Sold)
-  - Real-time search results
-  - Search through specifications and details
-
-- **Smart Features**
-  - AI-powered gear stories and insights
-  - Multiple narrative styles (Casual, Technical, Historical, Humorous, Poetic)
-  - Collection analysis and pattern recognition
-  - Personalized gear journey narratives
-
-- **User Experience**
+- **User Interface**
   - Modern, responsive design
-  - Intuitive gear card interface
-  - Detailed gear overlay views
-  - Real-time updates and feedback
-  - Comprehensive FAQ and support resources
+  - Intuitive gear detail overlay with sticky header
+  - Easy image management with drag-and-drop support
+  - Keyboard shortcuts (Esc to close overlays)
+  - Smooth transitions and hover effects
+  - Consistent color scheme and visual hierarchy
 
 ## Technology Stack
 
