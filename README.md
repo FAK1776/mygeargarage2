@@ -12,6 +12,14 @@ A modern web application for musicians to manage their gear collection, track ma
   - Load sample data for testing and demonstration
   - Flexible filtering and search capabilities
 
+- **Timeline View**
+  - Visual timeline of gear history
+  - Track purchases, sales, services, and modifications
+  - Distinctive icons for different event types
+  - Year-based organization with modern design
+  - Image galleries for purchase and sale events
+  - Detailed service and modification records
+
 - **Status Management**
   - Global filtering to view All/Own/Want/Sold gear
   - Individual status toggles on each gear card
@@ -153,6 +161,10 @@ src/
 
 ## Recent Updates
 
+- Enhanced timeline view with modern design and event-specific icons
+- Improved visual hierarchy in timeline with large year markers
+- Added distinctive icons for different event types (purchase, sale, service, modification)
+- Implemented grid layout for event images
 - Added AI-powered gear story generation with multiple writing styles
 - Implemented collection insights and analytics
 - Added comprehensive FAQ section

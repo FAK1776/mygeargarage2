@@ -10,12 +10,22 @@ export class GearService {
 
   private convertToGear(doc: DocumentData): BaseGear {
     const data = doc.data();
+    
+    // Convert service history dates
+    const serviceHistory = data.serviceHistory?.map((record: any) => ({
+      ...record,
+      date: record.date?.toDate() || null
+    })) || [];
+
     return {
       id: doc.id,
       ...data,
-      type: data.type || GearType.Other, // Default to Other if type is not specified
+      type: data.type || GearType.Other,
       createdAt: data.createdAt?.toDate(),
       updatedAt: data.updatedAt?.toDate(),
+      dateAcquired: data.dateAcquired?.toDate(),
+      dateSold: data.dateSold?.toDate(),
+      serviceHistory,
       images: Array.isArray(data.images) ? data.images : []
     } as BaseGear;
   }
@@ -23,21 +33,29 @@ export class GearService {
   async getUserGear(userId: string): Promise<BaseGear[]> {
     const q = query(this.gearCollection, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as BaseGear[];
+    return querySnapshot.docs.map(doc => this.convertToGear(doc));
   }
 
   async addGear(userId: string, gear: Omit<BaseGear, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const now = new Date();
+    const now = Timestamp.now();
+
+    // Convert service history dates to Timestamps
+    const serviceHistory = gear.serviceHistory?.map(record => ({
+      ...record,
+      date: record.date instanceof Date ? Timestamp.fromDate(record.date) : record.date
+    })) || [];
+
+    // Create a Firestore-safe object
     const gearWithDates = {
       ...gear,
       userId,
-      type: gear.type || GearType.Other, // Default to Other if type is not specified
+      type: gear.type || GearType.Other,
       createdAt: now,
       updatedAt: now,
-      status: gear.status || GearStatus.Own // Default to Own if not specified
+      status: gear.status || GearStatus.Own,
+      dateAcquired: gear.dateAcquired instanceof Date ? Timestamp.fromDate(gear.dateAcquired) : gear.dateAcquired,
+      dateSold: gear.dateSold instanceof Date ? Timestamp.fromDate(gear.dateSold) : gear.dateSold,
+      serviceHistory
     };
 
     const docRef = await addDoc(this.gearCollection, gearWithDates);
@@ -45,8 +63,44 @@ export class GearService {
   }
 
   async deleteGear(userId: string, gearId: string): Promise<void> {
-    const gearRef = doc(this.gearCollection, gearId);
-    await deleteDoc(gearRef);
+    try {
+      // Get the gear document first to verify ownership and get image URLs
+      const gearRef = doc(this.gearCollection, gearId);
+      const gearDoc = await getDoc(gearRef);
+      
+      if (!gearDoc.exists()) {
+        console.error('Gear not found:', gearId);
+        throw new Error('Gear not found');
+      }
+      
+      const gearData = gearDoc.data();
+      
+      // Verify ownership
+      if (gearData.userId !== userId) {
+        console.error('Unauthorized to delete gear:', gearId, 'Expected user:', userId, 'Actual user:', gearData.userId);
+        throw new Error('Unauthorized to delete this gear');
+      }
+      
+      // Delete all associated images from storage
+      if (gearData.images && Array.isArray(gearData.images)) {
+        for (const imageUrl of gearData.images) {
+          try {
+            const imageRef = ref(storage, imageUrl);
+            await deleteObject(imageRef);
+          } catch (error) {
+            console.error('Error deleting image:', imageUrl, error);
+            // Continue with deletion even if image deletion fails
+          }
+        }
+      }
+      
+      // Delete the gear document
+      await deleteDoc(gearRef);
+      console.log('Successfully deleted gear:', gearId);
+    } catch (error) {
+      console.error('Error deleting gear:', error);
+      throw error;
+    }
   }
 
   async updateGear(gear: BaseGear, userId?: string, gearId?: string) {
@@ -61,6 +115,12 @@ export class GearService {
 
       const gearRef = doc(this.gearCollection, actualGearId);
       
+      // Convert service history dates to Timestamps
+      const serviceHistory = gear.serviceHistory?.map(record => ({
+        ...record,
+        date: record.date instanceof Date ? Timestamp.fromDate(record.date) : record.date
+      })) || [];
+
       // Create a Firestore-safe update object
       const updateData = {
         make: gear.make || '',
@@ -76,9 +136,11 @@ export class GearService {
         weight: gear.weight || '',
         description: gear.description || '',
         specs: gear.specs || {},
-        serviceHistory: gear.serviceHistory || [],
+        serviceHistory,
         images: gear.images || [],
-        updatedAt: new Date()
+        dateAcquired: gear.dateAcquired instanceof Date ? Timestamp.fromDate(gear.dateAcquired) : gear.dateAcquired,
+        dateSold: gear.dateSold instanceof Date ? Timestamp.fromDate(gear.dateSold) : gear.dateSold,
+        updatedAt: Timestamp.now()
       };
 
       await updateDoc(gearRef, updateData);
@@ -100,8 +162,8 @@ export class GearService {
     const docRef = await addDoc(wishlistRef, {
       ...gear,
       userId,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now()
     });
     return { ...gear, id: docRef.id } as BaseGear;
   }
@@ -115,7 +177,7 @@ export class GearService {
     const wishlistRef = doc(db, 'wishlist', gearId);
     await updateDoc(wishlistRef, {
       ...updates,
-      updatedAt: new Date()
+      updatedAt: Timestamp.now()
     });
   }
 
@@ -153,7 +215,7 @@ export class GearService {
       
       await updateDoc(gearRef, { 
         images,
-        updatedAt: new Date()
+        updatedAt: Timestamp.now()
       });
       
       return { ...currentGear, images } as BaseGear;
@@ -191,7 +253,7 @@ export class GearService {
     const images = currentGear.images.filter((_, i) => i !== imageIndex);
     await updateDoc(gearRef, { 
       images,
-      updatedAt: new Date()
+      updatedAt: Timestamp.now()
     });
 
     return { ...currentGear, images } as BaseGear;

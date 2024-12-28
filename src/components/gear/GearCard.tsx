@@ -10,30 +10,42 @@ interface GearCardProps {
   onStatusChange?: (status: GearStatus) => void;
 }
 
+const GEAR_ICONS = {
+  [GearType.Guitar]: FaGuitar,
+  [GearType.Microphone]: FaMicrophone,
+  [GearType.Headphones]: FaHeadphones,
+  [GearType.Speakers]: GiSpeaker,
+  [GearType.Piano]: GiGrandPiano,
+  [GearType.Other]: FaMusic,
+} as const;
+
+const STATUS_OPTIONS = [
+  {
+    status: GearStatus.Own,
+    label: 'Own',
+    activeClass: 'bg-green-500 text-white',
+    hoverClass: 'hover:bg-green-100',
+  },
+  {
+    status: GearStatus.Want,
+    label: 'Want',
+    activeClass: 'bg-blue-500 text-white',
+    hoverClass: 'hover:bg-blue-100',
+  },
+  {
+    status: GearStatus.Sold,
+    label: 'Sold',
+    activeClass: 'bg-gray-500 text-white',
+    hoverClass: 'hover:bg-gray-100',
+  },
+] as const;
+
 export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onStatusChange }) => {
-  const getIcon = (type: GearType) => {
-    switch (type) {
-      case GearType.Guitar:
-        return <FaGuitar size={48} />;
-      case GearType.Microphone:
-        return <FaMicrophone size={48} />;
-      case GearType.Headphones:
-        return <FaHeadphones size={48} />;
-      case GearType.Speakers:
-        return <GiSpeaker size={48} />;
-      case GearType.Piano:
-        return <GiGrandPiano size={48} />;
-      case GearType.Other:
-      default:
-        return <FaMusic size={48} />;
-    }
-  };
+  const Icon = GEAR_ICONS[gear.type] || GEAR_ICONS[GearType.Other];
 
   const handleStatusClick = (e: React.MouseEvent, status: GearStatus) => {
     e.stopPropagation();
-    if (onStatusChange) {
-      onStatusChange(status);
-    }
+    onStatusChange?.(status);
   };
 
   const formatDate = (date: Date | undefined) => {
@@ -56,43 +68,26 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onS
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
-            {getIcon(gear.type)}
+            <Icon size={48} />
           </div>
         )}
         
         {/* Status Toggle */}
-        <div className="absolute top-2 left-2 flex bg-white rounded-lg shadow-md overflow-hidden">
-          <button
-            onClick={(e) => handleStatusClick(e, GearStatus.Own)}
-            className={`px-3 py-1 text-sm transition-colors ${
-              gear.status === GearStatus.Own 
-                ? 'bg-green-500 text-white' 
-                : 'hover:bg-green-100'
-            }`}
-          >
-            Own
-          </button>
-          <button
-            onClick={(e) => handleStatusClick(e, GearStatus.Want)}
-            className={`px-3 py-1 text-sm transition-colors ${
-              gear.status === GearStatus.Want 
-                ? 'bg-blue-500 text-white' 
-                : 'hover:bg-blue-100'
-            }`}
-          >
-            Want
-          </button>
-          <button
-            onClick={(e) => handleStatusClick(e, GearStatus.Sold)}
-            className={`px-3 py-1 text-sm transition-colors ${
-              gear.status === GearStatus.Sold 
-                ? 'bg-gray-500 text-white' 
-                : 'hover:bg-gray-100'
-            }`}
-          >
-            Sold
-          </button>
-        </div>
+        {onStatusChange && (
+          <div className="absolute top-2 left-2 flex bg-white rounded-lg shadow-md overflow-hidden">
+            {STATUS_OPTIONS.map(({ status, label, activeClass, hoverClass }) => (
+              <button
+                key={status}
+                onClick={(e) => handleStatusClick(e, status)}
+                className={`px-3 py-1 text-sm transition-colors ${
+                  gear.status === status ? activeClass : hoverClass
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {onDelete && (
           <button

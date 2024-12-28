@@ -38,11 +38,25 @@ export const Navbar = () => {
               My Garage
             </Button>
             <Button 
+              onClick={() => navigate('/timeline')}
+              variant="ghost" 
+              className="text-white hover:text-gray-200 text-lg font-medium"
+            >
+              Timeline
+            </Button>
+            <Button 
               onClick={() => navigate('/add-gear')}
               variant="ghost" 
               className="text-white hover:text-gray-200 text-lg font-medium"
             >
               Add Gear
+            </Button>
+            <Button 
+              onClick={() => navigate('/profile')}
+              variant="ghost" 
+              className="text-white hover:text-gray-200 text-lg font-medium"
+            >
+              Profile
             </Button>
             <Button 
               onClick={handleSignOut}
