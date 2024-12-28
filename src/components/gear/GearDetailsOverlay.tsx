@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { BaseGear } from '../../types/gear';
-import { FaTimes, FaEdit, FaSave } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaSave, FaInfoCircle } from 'react-icons/fa';
 import { GearService } from '../../services/gearService';
 import { useAuth } from '../../hooks/useAuth';
 import { GearImageGallery } from './details/GearImageGallery';
@@ -28,7 +28,7 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -49,7 +49,20 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
   }, [editedGear, user, onUpdate]);
 
   const handleGearUpdate = (updates: Partial<BaseGear>) => {
-    setEditedGear(prev => ({ ...prev, ...updates }));
+    const updatedGear = { ...editedGear, ...updates };
+    setEditedGear(updatedGear);
+    // Propagate updates immediately for image changes
+    if (updates.images) {
+      onUpdate?.(updatedGear);
+    }
+  };
+
+  const handleClose = () => {
+    // Ensure final state is propagated before closing
+    if (JSON.stringify(gear) !== JSON.stringify(editedGear)) {
+      onUpdate?.(editedGear);
+    }
+    onClose();
   };
 
   return (
@@ -83,7 +96,7 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
                   </button>
                 )}
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <FaTimes className="w-5 h-5" />
@@ -97,12 +110,16 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
             <div className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column */}
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <div>
                     <GearImageGallery gear={editedGear} isEditing={isEditing} onUpdate={handleGearUpdate} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">History</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">Gear History</h3>
+                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-4">
+                      <FaInfoCircle className="text-[#EE5430]" />
+                      <span>Record maintenance, modifications, and ownership changes</span>
+                    </div>
                     <GearHistory
                       gear={editedGear}
                       isEditing={isEditing}
@@ -112,9 +129,9 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-8">
+                <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Basic Information</h3>
                     <GearBasicInfo
                       gear={editedGear}
                       isEditing={isEditing}
@@ -122,16 +139,16 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
                     />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Price Information</h3>
-                    <GearPriceInfo
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Specifications</h3>
+                    <GearSpecs
                       gear={editedGear}
                       isEditing={isEditing}
                       onUpdate={handleGearUpdate}
                     />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Specifications</h3>
-                    <GearSpecs
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Transaction Information</h3>
+                    <GearPriceInfo
                       gear={editedGear}
                       isEditing={isEditing}
                       onUpdate={handleGearUpdate}

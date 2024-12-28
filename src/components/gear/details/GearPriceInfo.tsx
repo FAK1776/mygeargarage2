@@ -9,48 +9,58 @@ interface GearPriceInfoProps {
 }
 
 export const GearPriceInfo: React.FC<GearPriceInfoProps> = ({ gear, isEditing, onUpdate }) => {
+  const formatPrice = (price: number | undefined) => {
+    if (!price) return '';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="grid gap-2">
       <FormField
         label="Date Acquired"
         value={gear.dateAcquired}
-        isEditing={isEditing}
         type="date"
+        isEditing={isEditing}
         onChange={(value) => onUpdate({ dateAcquired: value })}
       />
       <FormField
         label="Price Paid"
-        value={gear.pricePaid}
+        value={isEditing ? gear.pricePaid : formatPrice(gear.pricePaid)}
+        type={isEditing ? "number" : "text"}
         isEditing={isEditing}
-        type="number"
-        onChange={(value) => onUpdate({ pricePaid: value })}
+        onChange={(value) => onUpdate({ pricePaid: Number(value) })}
       />
       <FormField
         label="Acquisition Notes"
         value={gear.acquisitionNotes}
-        isEditing={isEditing}
         type="textarea"
+        isEditing={isEditing}
         onChange={(value) => onUpdate({ acquisitionNotes: value })}
       />
       <FormField
         label="Date Sold"
         value={gear.dateSold}
-        isEditing={isEditing}
         type="date"
+        isEditing={isEditing}
         onChange={(value) => onUpdate({ dateSold: value })}
       />
       <FormField
         label="Price Sold"
-        value={gear.priceSold}
+        value={isEditing ? gear.priceSold : formatPrice(gear.priceSold)}
+        type={isEditing ? "number" : "text"}
         isEditing={isEditing}
-        type="number"
-        onChange={(value) => onUpdate({ priceSold: value })}
+        onChange={(value) => onUpdate({ priceSold: Number(value) })}
       />
       <FormField
         label="Sale Notes"
         value={gear.saleNotes}
-        isEditing={isEditing}
         type="textarea"
+        isEditing={isEditing}
         onChange={(value) => onUpdate({ saleNotes: value })}
       />
     </div>

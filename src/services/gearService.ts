@@ -259,6 +259,34 @@ export class GearService {
     return { ...currentGear, images } as BaseGear;
   }
 
+  async reorderImages(userId: string, gearId: string, fromIndex: number, toIndex: number): Promise<BaseGear> {
+    const gearRef = doc(this.gearCollection, gearId);
+    const gearDoc = await getDoc(gearRef);
+    
+    if (!gearDoc.exists()) {
+      throw new Error('Gear not found');
+    }
+    
+    const currentGear = this.convertToGear(gearDoc);
+    
+    if (!currentGear.images || fromIndex >= currentGear.images.length || toIndex >= currentGear.images.length) {
+      throw new Error('Invalid image indices');
+    }
+
+    // Create new array with reordered images
+    const images = [...currentGear.images];
+    const [movedImage] = images.splice(fromIndex, 1);
+    images.splice(toIndex, 0, movedImage);
+
+    // Update gear document with new image order
+    await updateDoc(gearRef, { 
+      images,
+      updatedAt: Timestamp.now()
+    });
+
+    return { ...currentGear, images } as BaseGear;
+  }
+
   private async compressImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

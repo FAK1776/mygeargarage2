@@ -1,5 +1,4 @@
 import React from 'react';
-import { BaseGear } from '../../types/gear';
 
 interface TimelineItemContent {
   title: string;
@@ -21,23 +20,28 @@ export const Timeline: React.FC<TimelineProps> = ({ data }) => {
               {/* Year marker with line running through it */}
               <div className="relative">
                 {/* Vertical line that runs through everything */}
-                <div className="absolute left-16 top-0 bottom-0 w-0.5 bg-neutral-200" 
-                     style={{ height: idx === data.length - 1 ? '100%' : '150%', zIndex: 0 }} />
+                <div 
+                  className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-600" 
+                  style={{ height: idx === data.length - 1 ? '100%' : '150%', zIndex: 0 }} 
+                />
                 
-                {/* Year number */}
-                <div className="relative z-10">
-                  <span className="absolute left-0 text-6xl font-bold text-neutral-800" style={{ top: '-0.5em' }}>
-                    {item.title}
-                  </span>
-                </div>
+                {/* Timeline dot */}
+                <div className="absolute -left-[5px] top-8 w-3.5 h-3.5 rounded-full bg-white border-4 border-indigo-600 z-10" />
 
                 {/* Content */}
-                <div className="ml-44 pt-16">
-                  <div className="relative">
-                    {/* Content area */}
-                    <div className="pb-8">
+                <div className="flex">
+                  {/* Line and content container */}
+                  <div className="pl-8 flex-grow">
+                    <div className="relative pb-8">
                       {item.content}
                     </div>
+                  </div>
+
+                  {/* Year number */}
+                  <div className="w-48 pl-8">
+                    <h2 className="text-7xl font-bold text-gray-600 sticky top-32">
+                      {item.title}
+                    </h2>
                   </div>
                 </div>
               </div>

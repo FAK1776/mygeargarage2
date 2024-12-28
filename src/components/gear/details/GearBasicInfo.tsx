@@ -10,7 +10,7 @@ interface GearBasicInfoProps {
 
 export const GearBasicInfo: React.FC<GearBasicInfoProps> = ({ gear, isEditing, onUpdate }) => {
   return (
-    <div className="space-y-4">
+    <div className="grid gap-2">
       <FormField
         label="Make"
         value={gear.make}
@@ -36,27 +36,27 @@ export const GearBasicInfo: React.FC<GearBasicInfoProps> = ({ gear, isEditing, o
         onChange={(value) => onUpdate({ modelNumber: value })}
       />
       <FormField
-        label="Series"
-        value={gear.series}
-        isEditing={isEditing}
-        onChange={(value) => onUpdate({ series: value })}
-      />
-      <FormField
         label="Serial Number"
         value={gear.serialNumber}
         isEditing={isEditing}
         onChange={(value) => onUpdate({ serialNumber: value })}
       />
       <FormField
-        label="Place of Origin"
+        label="Country of Origin"
         value={gear.placeOfOrigin}
         isEditing={isEditing}
         onChange={(value) => onUpdate({ placeOfOrigin: value })}
+        placeholder="e.g., USA, Japan, Mexico"
       />
       <FormField
         label="Orientation"
         value={gear.orientation}
         isEditing={isEditing}
+        type="select"
+        options={[
+          { value: "Right Handed", label: "Right Handed" },
+          { value: "Left Handed", label: "Left Handed" }
+        ]}
         onChange={(value) => onUpdate({ orientation: value })}
       />
       <FormField
