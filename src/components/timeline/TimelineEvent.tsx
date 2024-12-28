@@ -14,60 +14,38 @@ interface TimelineEventProps {
 }
 
 export const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
-  const getEventIcon = () => {
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString();
+  };
+
+  const getEventDescription = (event) => {
     switch (event.type) {
-      case 'purchase':
-        return <FaShoppingCart className="w-5 h-5 text-green-600" />;
-      case 'sale':
-        return <FaHandshake className="w-5 h-5 text-blue-600" />;
       case 'service':
-        return <FaTools className="w-5 h-5 text-orange-600" />;
+        return `${event.description} at ${event.provider}`;
       case 'maintenance':
-        return <FaWrench className="w-5 h-5 text-purple-600" />;
+        return `${event.description} at ${event.provider}`;
+      case 'purchase':
+        return `Purchased${event.provider ? ` from ${event.provider}` : ''}`;
+      case 'sale':
+        return `Sold${event.provider ? ` to ${event.provider}` : ''}`;
       default:
-        return null;
+        return event.description;
     }
   };
 
-  const shouldShowImage = event.type === 'purchase' || event.type === 'sale';
-
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-2">
-        <div className="flex-shrink-0">
-          {getEventIcon()}
-        </div>
-        <p className="text-sm text-gray-500">
-          {new Date(event.date).toLocaleDateString()}
-        </p>
-        {event.price && (
-          <div className="text-sm font-medium text-gray-900">
-            {event.price}
-          </div>
-        )}
+    <div className="flex items-start gap-4 mb-8">
+      <div className="relative flex items-center">
+        <div className="h-4 w-4 rounded-full bg-white border-2 border-indigo-600"></div>
+        <div className="absolute h-full w-0.5 bg-indigo-600 top-4 -z-10"></div>
       </div>
-      
-      <div className="text-neutral-800 dark:text-neutral-200 text-xs md:text-sm font-normal">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {event.gear.make} {event.gear.model}
-        </h3>
-        <p className="mb-2">{event.description}</p>
-        {event.provider && (
-          <p className="text-sm text-gray-500 mb-4">
-            Provider: {event.provider}
-          </p>
-        )}
-      </div>
-
-      {shouldShowImage && event.image && (
-        <div className="mt-4">
-          <img
-            src={event.image}
-            alt={`${event.gear.make} ${event.gear.model}`}
-            className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
-          />
+      <div className="flex-1">
+        <div className="flex items-baseline gap-3">
+          <span className="text-sm font-medium text-gray-600">{formatDate(event.date)}</span>
+          <h3 className="text-xl font-medium text-gray-900">{event.gear.make} {event.gear.model}</h3>
         </div>
-      )}
+        <p className="mt-1 text-base text-gray-700">{getEventDescription(event)}</p>
+      </div>
     </div>
   );
 }; 

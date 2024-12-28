@@ -30,13 +30,16 @@ const TimelinePage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EE5430]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 pt-28">
+        <h1 className="text-h1 mb-8">My Timeline</h1>
+      </div>
       <TimelineView gear={gear} />
     </div>
   );

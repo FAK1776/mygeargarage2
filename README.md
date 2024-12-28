@@ -78,11 +78,12 @@ npm run build && firebase deploy --only hosting:production
 
 ## Recent Updates
 
-- Added vertical timeline view with year markers
-- Improved filter UI for event types
-- Added color-coded event categories
-- Fixed service history display in timeline
-- Improved image handling for timeline events
+- Enhanced timeline UI with chronological ordering (newest to oldest)
+- Added main gear images to purchase and sale events
+- Improved date handling for various formats
+- Added proper event filtering with toggle buttons
+- Standardized text sizes and colors for better readability
+- Fixed service history integration in timeline
 - Added responsive design improvements
 
 ## License

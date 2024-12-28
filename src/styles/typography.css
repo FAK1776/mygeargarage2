@@ -1,0 +1,63 @@
+/* Typography Scale */
+.text-display {
+  @apply text-5xl font-light text-gray-900;
+}
+
+.text-h1 {
+  @apply text-4xl font-bold text-gray-900 mb-8;
+}
+
+.text-h2 {
+  @apply text-2xl font-medium text-gray-900;
+}
+
+.text-h3 {
+  @apply text-xl font-medium text-gray-900;
+}
+
+.text-subtitle {
+  @apply text-lg font-medium text-gray-700;
+}
+
+.text-body {
+  @apply text-base text-gray-700;
+}
+
+.text-body-sm {
+  @apply text-sm text-gray-700;
+}
+
+.text-caption {
+  @apply text-sm text-gray-500;
+}
+
+/* Links */
+.text-link {
+  @apply text-[#EE5430] hover:text-[#EE5430]/90 underline-offset-4 hover:underline;
+}
+
+/* Interactive Text */
+.text-success {
+  @apply text-green-600;
+}
+
+.text-error {
+  @apply text-red-500;
+}
+
+.text-warning {
+  @apply text-yellow-600;
+}
+
+/* Labels and Form Text */
+.text-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.text-placeholder {
+  @apply text-sm text-gray-500;
+}
+
+.text-helper {
+  @apply text-sm text-gray-500;
+} 

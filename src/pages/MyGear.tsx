@@ -130,11 +130,11 @@ export const MyGear = () => {
 
   return (
     <>
-      <div className="container mx-auto px-4 pt-28 pb-8 max-w-7xl">
-        <div className="flex flex-col gap-4 mb-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-light text-gray-900">My Gear</h1>
-            <div className="flex gap-4">
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 pt-28">
+          <div className="flex justify-between items-start mb-8">
+            <h1 className="text-h1">My Gear</h1>
+            <div className="flex gap-4 mt-4">
               <button
                 onClick={handleLoadSampleData}
                 disabled={loadingSample}
@@ -151,7 +151,7 @@ export const MyGear = () => {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-12">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
@@ -199,7 +199,7 @@ export const MyGear = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 pb-12">
             {sortedGear.map(item => (
               <GearCard
                 key={item.id}
