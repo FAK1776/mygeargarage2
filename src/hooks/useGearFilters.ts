@@ -43,17 +43,24 @@ export const useGearFilters = ({ gear }: UseGearFiltersProps): UseGearFiltersRet
 
         // Search in specifications
         const specs = item.specs;
+        if (!specs) return false;
         
         // Helper function to search in an object's values
-        const searchInObject = (obj: Record<string, any>) => {
+        const searchInObject = (obj: Record<string, any> | undefined) => {
           if (!obj || typeof obj !== 'object') return false;
-          return Object.values(obj).some(value => 
-            typeof value === 'string' && value.toLowerCase().includes(query)
-          );
+          return Object.values(obj).some(value => {
+            if (typeof value === 'string') {
+              return value.toLowerCase().includes(query);
+            }
+            if (value && typeof value === 'object') {
+              return searchInObject(value);
+            }
+            return false;
+          });
         };
 
         // Search in all specification categories
-        return specs && (
+        return (
           searchInObject(specs.body) ||
           searchInObject(specs.neck) ||
           searchInObject(specs.headstock) ||

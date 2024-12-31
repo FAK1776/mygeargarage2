@@ -53,10 +53,16 @@ export class GearService {
       createdAt: now,
       updatedAt: now,
       status: gear.status || GearStatus.Own,
-      dateAcquired: gear.dateAcquired instanceof Date ? Timestamp.fromDate(gear.dateAcquired) : gear.dateAcquired,
-      dateSold: gear.dateSold instanceof Date ? Timestamp.fromDate(gear.dateSold) : gear.dateSold,
       serviceHistory
     };
+
+    // Only add date fields if they exist
+    if (gear.dateAcquired) {
+      gearWithDates.dateAcquired = gear.dateAcquired instanceof Date ? Timestamp.fromDate(gear.dateAcquired) : gear.dateAcquired;
+    }
+    if (gear.dateSold) {
+      gearWithDates.dateSold = gear.dateSold instanceof Date ? Timestamp.fromDate(gear.dateSold) : gear.dateSold;
+    }
 
     const docRef = await addDoc(this.gearCollection, gearWithDates);
     return docRef.id;

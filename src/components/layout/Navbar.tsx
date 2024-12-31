@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/button';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut, user } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const handleSignOut = async () => {
     try {
@@ -18,6 +20,13 @@ export const Navbar = () => {
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  const navItems = [
+    { path: '/', label: 'My Garage' },
+    { path: '/timeline', label: 'Timeline' },
+    { path: '/add-gear', label: 'Add Gear' },
+    { path: '/profile', label: 'Profile' },
+  ];
 
   return (
     <nav className="bg-[#EE5430] fixed w-full top-0 z-50 shadow-md">
@@ -32,13 +41,17 @@ export const Navbar = () => {
             />
           </div>
 
-          <div className="flex items-center space-x-1">
-            {[
-              { path: '/', label: 'My Garage' },
-              { path: '/timeline', label: 'Timeline' },
-              { path: '/add-gear', label: 'Add Gear' },
-              { path: '/profile', label: 'Profile' },
-            ].map(({ path, label }) => (
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-white p-2"
+          >
+            {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+          </button>
+
+          {/* Desktop navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navItems.map(({ path, label }) => (
               <Button 
                 key={path}
                 onClick={() => navigate(path)}
@@ -68,6 +81,47 @@ export const Navbar = () => {
                 ml-2 px-4 py-2 text-lg font-medium
                 text-white/90 hover:text-white
                 transition-all duration-200
+                border border-white/20 hover:border-white/40
+                hover:bg-white/10
+              "
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile navigation */}
+        <div className={`
+          md:hidden 
+          ${isMenuOpen ? 'block' : 'hidden'}
+          pb-4
+        `}>
+          <div className="flex flex-col space-y-2">
+            {navItems.map(({ path, label }) => (
+              <Button 
+                key={path}
+                onClick={() => {
+                  navigate(path);
+                  setIsMenuOpen(false);
+                }}
+                variant="ghost" 
+                className={`
+                  w-full text-left px-4 py-3 text-lg font-medium
+                  ${isActive(path) 
+                    ? 'text-white bg-white/20' 
+                    : 'text-white/90 hover:text-white hover:bg-white/10'
+                  }
+                `}
+              >
+                {label}
+              </Button>
+            ))}
+            <Button 
+              onClick={handleSignOut}
+              variant="ghost" 
+              className="
+                w-full text-left px-4 py-3 text-lg font-medium
+                text-white/90 hover:text-white
                 border border-white/20 hover:border-white/40
                 hover:bg-white/10
               "
