@@ -14,6 +14,9 @@
 
 ### 2. Form Handling Guidelines
 - Keep form state local until explicit save action
+- Implement loading states during form submission
+- Provide visual feedback for user actions
+- Handle navigation after successful submission
 - Avoid real-time API updates during typing
 - Use controlled components for form inputs
 - Implement clear save/cancel actions
@@ -24,7 +27,44 @@
 - Implement smart field rendering
 - Hide empty fields in view mode
 
-### 3. TypeScript Guidelines
+### 3. Layout Guidelines
+- Consistent page padding (28 units from top)
+- Proper spacing between elements
+- Responsive layout considerations:
+  - Mobile-first approach
+  - Smart control sizing
+  - Flexible layouts
+- Form control alignment:
+  - Proper width constraints
+  - Aligned form elements
+  - Consistent spacing
+- Navigation consistency:
+  - Standard header height
+  - Proper content padding
+  - No content overlap
+
+### 4. Styling Guidelines
+- TailwindCSS for styling
+- Consistent color palette:
+  - Primary: #EE5430
+  - Text: gray-600 to gray-900
+  - Borders: gray-200
+- Component states:
+  - Loading states with spinners
+  - Disabled states with reduced opacity
+  - Hover and focus states
+- Visual feedback:
+  - Button state changes
+  - Loading indicators
+  - Success/error states
+- Responsive design patterns
+- Component-specific styles when needed
+- Visual hierarchy in forms
+- Clear category separation
+- Consistent spacing and alignment
+- Smart use of whitespace
+
+### 5. TypeScript Guidelines
 - Use strict type checking
 - Define interfaces for all props
 - Avoid `any` type
@@ -34,7 +74,7 @@
 - Proper typing for nested objects
 - Type safety in data transformations
 
-### 4. React Best Practices
+### 6. React Best Practices
 - Functional components with hooks
 - Custom hooks for shared logic
 - Memoization for expensive operations
@@ -46,18 +86,7 @@
 - Component composition for complex UIs
 - Efficient prop drilling management
 
-### 5. Styling Guidelines
-- TailwindCSS for styling
-- Consistent color palette
-- Responsive design patterns
-- Mobile-first approach
-- Component-specific styles when needed
-- Visual hierarchy in forms
-- Clear category separation
-- Consistent spacing and alignment
-- Smart use of whitespace
-
-### 6. File Structure
+### 7. File Structure
 ```
 src/
 ├── components/
@@ -73,7 +102,7 @@ src/
 └── config/
 ```
 
-### 7. Component Template
+### 8. Component Template
 ```tsx
 import React from 'react';
 import { ComponentProps } from '../types';
@@ -92,28 +121,28 @@ export const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
 };
 ```
 
-### 8. State Management
+### 9. State Management
 - Local state with useState
 - Complex state with useReducer
 - Global state with context
 - Proper state initialization
 - State update best practices
 
-### 9. Performance Guidelines
+### 10. Performance Guidelines
 - Lazy loading for routes
 - Image optimization
 - Code splitting
 - Bundle size monitoring
 - Performance monitoring
 
-### 10. Testing Guidelines
+### 11. Testing Guidelines
 - Component unit tests
 - Integration testing
 - E2E testing when needed
 - Test naming conventions
 - Test coverage goals
 
-### 11. Documentation
+### 12. Documentation
 - Component documentation
 - Props documentation
 - Function documentation

@@ -25,22 +25,30 @@ src/
 │   │   │   └── GearHistoryChat.tsx
 │   │   ├── forms/
 │   │   │   ├── GearSpecsForm.tsx
-│   │   │   └── GearDetailsForm.tsx
-│   │   ├── GearCard.tsx
-│   │   ├── GearList.tsx
+│   │   │   ├── GearDetailsForm.tsx
+│   │   │   └── SpecificationParser.tsx
+│   │   ├── list/
+│   │   │   ├── GearCard.tsx
+│   │   │   ├── GearGrid.tsx
+│   │   │   └── GearFilters.tsx
 │   │   └── GearDetailsOverlay.tsx
 │   ├── timeline/
 │   │   ├── TimelineView.tsx
 │   │   ├── TimelineEvent.tsx
-│   │   └── TimelineFilters.tsx
-│   ├── service/
-│   │   ├── ServiceForm.tsx
-│   │   └── ServiceHistory.tsx
+│   │   ├── TimelineSearch.tsx
+│   │   ├── TimelineFilters.tsx
+│   │   └── TimelineYearGroup.tsx
+│   ├── layout/
+│   │   ├── Navigation.tsx
+│   │   ├── PageLayout.tsx
+│   │   └── Header.tsx
 │   └── ui/
 │       ├── Button.tsx
 │       ├── Input.tsx
 │       ├── Modal.tsx
 │       ├── Timeline.tsx
+│       ├── LoadingSpinner.tsx
+│       ├── ProgressBar.tsx
 │       └── FormField.tsx
 ├── pages/
 │   ├── Home.tsx
@@ -133,10 +141,14 @@ tests/
 
 ### 1. Component Files
 - **GearCard.tsx**: Individual gear item display
-- **GearSpecifications.tsx**: Comprehensive gear specifications component
-- **GearDetailsOverlay.tsx**: Main gear details view with edit capabilities
-- **GearHistoryChat.tsx**: Service history chat interface
-- **FormField.tsx**: Reusable form field component
+- **GearGrid.tsx**: Responsive grid layout for gear items
+- **GearFilters.tsx**: Filter controls for gear list
+- **TimelineSearch.tsx**: Search functionality for timeline
+- **TimelineYearGroup.tsx**: Year-based grouping for timeline
+- **Navigation.tsx**: Main navigation component
+- **PageLayout.tsx**: Standard page layout wrapper
+- **LoadingSpinner.tsx**: Loading state indicator
+- **ProgressBar.tsx**: Progress indicator for uploads
 
 ### 2. Service Files
 - **gearService.ts**: Gear CRUD operations

@@ -4,6 +4,39 @@ A web application for musicians to track their gear collection, including purcha
 
 ## Features
 
+### My Gear (Home)
+- Comprehensive gear collection overview
+- Quick actions for common tasks
+- Smart filtering and sorting capabilities
+- Dynamic grid layout with responsive design
+- Instant search functionality
+- Collection statistics at a glance
+
+### Add Gear
+- Streamlined gear addition process
+- Specification parser for automatic data entry
+- Real-time form validation and feedback
+- Progressive image upload with status indicators
+- Smart field validation and formatting
+- Automatic navigation after successful submission
+
+### Timeline View
+- Chronological display of all gear-related events
+- Smart filtering system:
+  - Event type filtering (purchases, sales, service)
+  - Instrument-specific filtering
+  - Full-text search across all fields
+- Visual timeline with year grouping
+- Consistent event card layout
+- Direct access to gear details
+
+### Profile & Settings
+- User preferences management
+- Collection statistics and insights
+- Account settings and customization
+- Theme preferences
+- Notification settings
+
 ### Collection Management
 - Add and track musical instruments and equipment
 - Upload and manage multiple images per item
@@ -28,19 +61,6 @@ A web application for musicians to track their gear collection, including purcha
 - Categorize service types (maintenance, repairs, modifications)
 - AI-powered service record parsing
 - Chronological timeline view of all events
-
-### Timeline View
-- Chronological display of all gear-related events (newest first)
-- Filter by event type (purchases, sales, service, maintenance)
-- Visual timeline with year markers
-- Image display for purchase and sale events
-- Narrative format for event descriptions
-
-### Profile & Insights
-- Collection statistics and overview
-- Gear distribution by type and brand
-- AI-generated collection insights
-- Custom gear stories in various styles
 
 ## Documentation
 
@@ -146,6 +166,16 @@ For additional support or questions:
 
 ## Recent Updates
 
+- Enhanced navigation structure with improved user flow
+- Standardized layout with consistent padding (28px top)
+- Improved form control alignment and sizing
+- Enhanced visual feedback during user actions
+- Optimized timeline view with smart filtering
+- Added loading states and progress indicators
+- Standardized component spacing and alignment
+- Improved responsive design implementation
+- Enhanced form submission feedback
+- Optimized navigation bar layout
 - Implemented comprehensive guitar specifications structure
 - Enhanced GearDetailsOverlay with dynamic field rendering
 - Added smart category/subcategory display logic

@@ -1,68 +1,116 @@
-# Backend Structure Documentation
+# Backend Structure
 
-## Firebase Services
+## Services
 
-### 1. Authentication
-- Firebase Authentication
-  - Email/password authentication
-  - Google OAuth integration
-  - User session management
-  - Security rules
+### 1. Authentication Service
+- User management
+- Session handling
+- OAuth integration
 
-### 2. Firestore Database Structure
+### 2. Gear Service
+- CRUD operations for gear items
+- Image management
+- Specification handling
+- Service history tracking
+
+### 3. AI Services
+- Gear Parsing Service
+  - Google Gemini integration
+  - Specification parsing
+  - Field mapping and validation
+  - Error handling
+- Story Generation Service
+  - Collection insights
+  - Gear stories
+  - Timeline analysis
+
+### 4. Storage Service
+- Image upload and management
+- File organization
+- Progress tracking
+
+### 5. Timeline Service
+- Event tracking
+- History management
+- Service records
+
+## Data Models
+
+### User Model
+```typescript
+interface User {
+  id: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  createdAt: Timestamp;
+}
 ```
-collections/
-├── users/
-│   └── userId/
-│       ├── profile
-│       └── settings
-├── gear/
-│   └── gearId/
-│       ├── details
-│       ├── specifications
-│       ├── images
-│       └── history
-├── services/
-│   └── serviceId/
-│       ├── details
-│       └── provider
-└── timeline/
-    └── eventId/
-        ├── type
-        └── details
+
+### Gear Model
+```typescript
+interface Gear {
+  id: string;
+  userId: string;
+  type: GearType;
+  status: GearStatus;
+  specs: GuitarSpecs;
+  images: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  serviceHistory?: HistoryRecord[];
+  make: string;
+  model: string;
+}
 ```
 
-### 3. Cloud Storage
-- Structure:
-  ```
-  storage/
-  ├── users/
-  │   └── userId/
-  │       └── profile/
-  └── gear/
-      └── gearId/
-          └── images/
-  ```
-- Image optimization
-- Access control
-- Folder organization
-
-### 4. Security Rules
+### Guitar Specifications
+```typescript
+interface GuitarSpecs {
+  overview: {
+    manufacturer: string;
+    model: string;
+    // ... other overview fields
+  };
+  top: {
+    color: string;
+    finish: string;
+    // ... other top fields
+  };
+  body: {
+    design: {
+      // ... design fields
+    };
+    bracing: {
+      // ... bracing fields
+    };
+    dimensions: {
+      // ... dimension fields
+    };
+  };
+  // ... other specification sections
+}
 ```
-// Firestore Rules
+
+## Firebase Configuration
+
+### Security Rules
+```javascript
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
     }
     match /gear/{gearId} {
-      allow read, write: if request.auth != null && 
-        request.auth.uid == resource.data.userId;
+      allow read, write: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.id == resource.data.userId;
     }
   }
 }
+```
 
-// Storage Rules
+### Storage Rules
+```javascript
 service firebase.storage {
   match /b/{bucket}/o {
     match /users/{userId}/{allPaths=**} {
@@ -75,138 +123,38 @@ service firebase.storage {
 }
 ```
 
-### 5. API Services
+## API Services
 - Authentication Service
 - Gear Service
   - CRUD operations
   - Image management
   - Specification updates
   - Service history
+- AI Services
+  - Specification parsing
+  - Content generation
+  - Analysis and insights
 - Timeline Service
 - Storage Service
 - User Service
 
-### 6. Data Models
-```typescript
-interface User {
-  id: string;
-  email: string;
-  displayName: string;
-  photoURL?: string;
-  createdAt: Timestamp;
-}
+## Error Handling
+- Standardized error responses
+- Error logging and tracking
+- User-friendly error messages
+- Validation error handling
+- API error recovery
 
-interface Gear {
-  id: string;
-  userId: string;
-  name: string;
-  type: string;
-  brand: string;
-  model: string;
-  purchaseDate: Timestamp;
-  purchasePrice: number;
-  status: 'Own' | 'Want' | 'Sold';
-  images: string[];
-  specifications: GuitarSpecs;
-}
-
-interface GuitarSpecs {
-  overview: {
-    manufacturer: string;
-    model: string;
-    bodySizeShape: string;
-    series: string;
-    buildType: string;
-    // ... other overview fields
-  };
-  top: {
-    color: string;
-    finish: string;
-    binding: string;
-    // ... other top fields
-  };
-  body: {
-    design: {
-      color: string;
-      finish: string;
-      binding: string;
-      // ... other design fields
-    };
-    bracing: {
-      bodyBracing: string;
-      bracingPattern: string;
-      // ... other bracing fields
-    };
-    dimensions: {
-      bodyDepth: string;
-      upperBoutWidth: string;
-      // ... other dimension fields
-    };
-  };
-  neckHeadstock: {
-    neck: {
-      material: string;
-      profile: string;
-      // ... other neck fields
-    };
-    fingerboard: {
-      material: string;
-      radius: string;
-      // ... other fingerboard fields
-    };
-    headstock: {
-      shape: string;
-      material: string;
-      // ... other headstock fields
-    };
-  };
-  electronics: {
-    pickupConfiguration: string;
-    controls: string;
-    // ... other electronics fields
-  };
-  hardware: {
-    bridge: string;
-    tuningMachines: string;
-    // ... other hardware fields
-  };
-  miscellaneous: {
-    pleked: boolean;
-    case: string;
-    // ... other misc fields
-  };
-}
-
-interface Service {
-  id: string;
-  gearId: string;
-  type: string;
-  date: Timestamp;
-  provider: string;
-  cost: number;
-  notes: string;
-}
-```
-
-### 7. Cloud Functions
-- Image processing
-- Notification handling
-- Data aggregation
-- Backup functions
-- Cleanup tasks
-
-### 8. Performance Considerations
-- Indexing strategy
+## Performance Optimization
 - Query optimization
-- Caching implementation
-- Rate limiting
-- Cost optimization
-- Efficient specification updates
-- Smart data fetching
+- Data caching
+- Image optimization
+- Batch operations
+- Real-time updates
 
-### 9. Monitoring
-- Error tracking
-- Performance monitoring
-- Usage analytics
-- Cost tracking
-- Security alerts 
+## Security Measures
+- Authentication checks
+- Data validation
+- Input sanitization
+- Rate limiting
+- API key management 

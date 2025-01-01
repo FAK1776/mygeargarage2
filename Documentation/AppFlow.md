@@ -8,22 +8,27 @@
 3. Redirected to home dashboard
 
 ### 2. Main Navigation Flow
-- Home Dashboard
-  - Quick overview of collection
-  - Recent activity
-  - Quick actions
-- My Gear Collection
-  - Full gear list view
+Primary navigation order:
+- My Gear (Home)
+  - Full gear collection view
   - Filtering and sorting options
-  - Add new gear button
-- Timeline View
+  - Quick actions
+- Add Gear
+  - Specification parser
+  - Manual gear entry
+  - Form submission feedback
+- Gear Timeline
   - Chronological event display
-  - Event filtering options
+  - Event filtering and search
+  - Instrument filtering
 - Profile & Settings
 
 ### 3. Gear Management Flow
 1. Adding New Gear
-   - Basic information entry
+   - Specification parser for automatic data entry
+   - Manual form input with live feedback
+   - Loading states during submission
+   - Automatic navigation after success
    - Image upload with progress tracking
    - Comprehensive specifications input:
      - Overview section (manufacturer, model, etc.)

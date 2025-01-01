@@ -1,156 +1,80 @@
-# Technology Stack Documentation
+# Technology Stack
 
-## Core Technologies
+## Frontend
+- React with TypeScript
+- Vite for build tooling
+- TailwindCSS for styling
+  - Custom component library
+  - Responsive design system
+  - Consistent spacing utilities
+  - Dynamic color palette
+- React Router for navigation
+  - Custom route guards
+  - Navigation state management
+- React Query for data fetching
+- UI Components
+  - Custom form controls
+  - Loading indicators
+  - Progress bars
+  - Modal system
+  - Toast notifications
+  - Responsive grid system
+  - Timeline components
 
-### 1. Frontend
-- **Framework**: React 18
-- **Language**: TypeScript 5
-- **Build Tool**: Vite
-- **State Management**: React Context + Hooks
-- **Styling**: TailwindCSS
-- **Form Management**: Custom form handling with local state
-- **Component Architecture**: Modular, feature-based structure
+## Backend
+- Firebase
+  - Firestore for database
+  - Firebase Auth for authentication
+  - Firebase Storage for images
+  - Firebase Hosting for deployment
 
-### 2. Backend (Firebase)
-- Firebase Authentication
-- Cloud Firestore
-  - Optimized data structure
-  - Efficient specification storage
-  - Smart query patterns
-- Cloud Storage
-  - Image management
-  - File organization
-- Cloud Functions
-- Firebase Hosting
-  - Production environment
-  - Staging environment
-
-### 3. AI Integration
-- Google AI (Gemini)
-  - Service record parsing
-  - Collection insights
-  - Custom gear stories
-  - Specification parsing (planned)
+## AI/ML Integration
+- Google Gemini Pro
+  - Specification parsing and analysis
+  - Natural language processing
+  - Content generation
+- Google Generative AI SDK
+  - AI model integration
+  - Response handling
+  - Safety settings
 
 ## Development Tools
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting
+- Git for version control
+- GitHub for repository hosting
 
-### 1. Version Control
-- Git
-- GitHub
-- GitHub Actions for CI/CD
-
-### 2. Development Environment
-- Node.js
-- npm/yarn
-- VS Code recommended extensions
-- ESLint + Prettier
-
-### 3. Testing Framework
-- Jest
+## Testing
+- Jest for unit testing
 - React Testing Library
-- Cypress for E2E
+- Firebase Emulator Suite
 
-## Dependencies
-
-### 1. Production Dependencies
-```json
-{
-  "react": "^18.x",
-  "react-dom": "^18.x",
-  "typescript": "^5.x",
-  "firebase": "^10.x",
-  "tailwindcss": "^3.x",
-  "@google/generative-ai": "^0.1.x",
-  "date-fns": "^2.x",
-  "react-router-dom": "^6.x",
-  "react-hook-form": "^7.x",
-  "zod": "^3.x"
-}
-```
-
-### 2. Development Dependencies
-```json
-{
-  "@types/react": "^18.x",
-  "@types/node": "^20.x",
-  "vite": "^5.x",
-  "eslint": "^8.x",
-  "prettier": "^3.x",
-  "jest": "^29.x",
-  "@testing-library/react": "^14.x"
-}
-```
-
-## Infrastructure
-
-### 1. Hosting
+## Deployment
 - Firebase Hosting
   - Production environment
   - Staging environment
-  - Automated deployments
-- Custom domains
-- SSL certificates
+- GitHub Actions for CI/CD
 
-### 2. Storage
-- Firebase Cloud Storage
-- Image optimization
-- CDN integration
-- Efficient file organization
-- Progress tracking
-- Error handling
-
-### 3. Database
-- Cloud Firestore
-  - Optimized collections
-  - Efficient queries
-  - Smart caching
-  - Real-time updates
-  - Specification storage
-  - Service history tracking
-
-### 4. Authentication
-- Firebase Authentication
-- OAuth providers
-- JWT tokens
-
-## Monitoring & Analytics
-
-### 1. Performance Monitoring
-- Firebase Performance Monitoring
-- Web Vitals tracking
-- Error tracking
-
-### 2. Analytics
+## Monitoring
 - Firebase Analytics
-- User behavior tracking
-- Conversion tracking
+- Error tracking
+- Performance monitoring
 
-### 3. Security
-- Firebase App Check
-- Security rules
-- API key management
+## Security
+- Firebase Authentication
+- Firebase Security Rules
+- Content security policies
+- Data validation and sanitization
 
-## Development Workflow
+## Additional Tools
+- Image processing and optimization
+- Markdown support
+- Date handling libraries
+- Form validation
 
-### 1. Local Development
-- Development server
-- Hot module replacement
-- Environment variables
-- Type checking
-- Component development
-- Form testing
-
-### 2. Deployment Pipeline
-- Build process
-- Testing
-- Staging deployment
-- Production deployment
-- Automated checks
-
-### 3. Code Quality
-- TypeScript strict mode
-- ESLint configuration
-- Prettier formatting
-- Git hooks
-- Component standards
-- Documentation requirements 
+## Development Environment
+- VS Code
+- Chrome DevTools
+- Firebase CLI
+- Node.js and npm 

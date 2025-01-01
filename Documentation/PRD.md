@@ -19,6 +19,12 @@ My Gear Garage is a web application designed for musicians to track their gear c
   - Electronics configuration
   - Hardware components
   - Additional specifications
+- Automated specification parsing:
+  - AI-powered parsing of manufacturer specifications
+  - Support for various specification formats
+  - Accurate field mapping and validation
+  - Comprehensive error handling
+  - User feedback on parsing results
 - Dynamic field rendering based on data presence
 - Smart category/subcategory display
 - Support for boolean and text field types
