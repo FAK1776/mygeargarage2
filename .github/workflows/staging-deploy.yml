@@ -1,31 +1,65 @@
 name: Deploy to Firebase Staging
 
+# Test deployment trigger - Added for CI/CD testing
 on:
   push:
     branches:
-      - main  # or your staging branch if different
+      - main
+  workflow_dispatch:  # Allow manual triggers
+
+env:
+  NODE_VERSION: '18'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true  # Cancel running deployments if new one is triggered
+      
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for better change detection
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install Dependencies
         run: npm ci
+        
+      - name: Verify Dependencies
+        run: npm audit
+
+      - name: Run Linter
+        run: npm run lint || true  # Don't fail deployment on lint errors, but report them
 
       - name: Run Tests
         run: npm test
+        continue-on-error: false  # Fail deployment if tests fail
         
       - name: Type Check
         run: npm run type-check
+        continue-on-error: false  # Fail deployment if type check fails
 
+      - name: Copy Staging Environment
+        run: cp .env.staging .env
+        
       - name: Build
         run: npm run build
         env:
@@ -35,6 +69,7 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          NODE_ENV: staging
 
       - name: Deploy to Firebase Staging
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -43,4 +78,14 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: my-gear-garage
           channelId: staging
-          target: staging-my-gear-garage 
+          target: staging-my-gear-garage
+        
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "::notice::🚀 Successfully deployed to staging environment"
+          
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "::error::❌ Deployment to staging failed" 

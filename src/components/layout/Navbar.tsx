@@ -22,9 +22,9 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { path: '/', label: 'My Garage' },
-    { path: '/timeline', label: 'Timeline' },
+    { path: '/', label: 'My Gear' },
     { path: '/add-gear', label: 'Add Gear' },
+    { path: '/timeline', label: 'Gear Timeline' },
     { path: '/profile', label: 'Profile' },
   ];
 

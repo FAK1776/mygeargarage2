@@ -1,403 +1,343 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { BaseGear, GearType, GuitarSpecs, ServiceRecord, OwnershipRecord, ModificationRecord } from '../types/gear';
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_AI_API_KEY);
-
 export class GeminiService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  private model;
+  private PARSE_PROMPT = `You are a guitar specification parser. Convert the following guitar specifications into a structured format that exactly matches this schema:
 
-  async parseGearSpecs(specs: string): Promise<Partial<BaseGear>> {
-    const prompt = `
-      Parse the following musical gear specifications and extract relevant information.
-      Format the response as a JSON object with the following structure:
-      {
-        "type": "Guitar", // One of: Guitar, Bass, Microphone, Headphones, Speakers, Piano, Other
-        "make": "", // Brand/manufacturer
-        "model": "", // Model name
-        "year": "", // Manufacturing year if available
-        "modelNumber": "",
-        "series": "",
-        "serialNumber": "",
-        "orientation": "", // Right Handed or Left Handed
-        "numberOfStrings": "", // For guitars/basses
-        "weight": "",
-        "description": "",
-        "label": "", // For commemorative or custom guitars
-        "pleked": false, // Whether the guitar has been Plek processed
-        "specs": {
-          "body": {
-            "shape": "",
-            "size": "", // e.g., "D-14 Fret"
-            "type": "",
-            "material": "",
-            "topBack": "",
-            "finish": "",
-            "depth": "",
-            "binding": "",
-            "bracing": {
-              "pattern": "", // e.g., "X-Brace"
-              "shape": ""  // e.g., "Scalloped"
-            },
-            "cutaway": "",
-            "topColor": "",
-            "rosette": {
-              "type": "",
-              "detail": "" // e.g., "Abalone with Multi-Stripe"
-            },
-            "endpiece": {
-              "material": "",
-              "inlay": "" // e.g., "Multi-Stripe"
-            }
-          },
-          "neck": {
-            "material": "",
-            "shape": "",
-            "thickness": "",
-            "construction": "",
-            "finish": "",
-            "scaleLength": "",
-            "heelcap": "", // Material or color
-            "fingerboard": {
-              "material": "",
-              "radius": "",
-              "widthAt12thFret": "", // e.g., "2 1/8''"
-              "inlays": "",
-              "binding": "",
-              "sideDots": ""
-            },
-            "numberOfFrets": "",
-            "fretSize": "",
-            "nut": {
-              "material": "",
-              "width": ""
-            }
-          },
-          "headstock": {
-            "shape": "",
-            "binding": "",
-            "tuningMachines": "",
-            "headplateLogo": ""
-          },
-          "hardware": {
-            "bridge": "",
-            "tailpiece": "",
-            "finish": "",
-            "pickguard": {
-              "type": "",
-              "inlay": "" // e.g., "None" or specific inlay pattern
-            },
-            "knobs": "",
-            "strapButtons": ""
-          },
-          "electronics": {
-            "pickupSystem": "",
-            "neckPickup": "",
-            "bridgePickup": "",
-            "pickupConfiguration": "",
-            "controls": "",
-            "pickupSwitching": "",
-            "auxiliarySwitching": ""
-          },
-          "extras": {
-            "recommendedStrings": "", // e.g., "Authentic Acoustic Lifespan® 2.0 Phosphor Bronze - Medium"
-            "strings": "",
-            "caseOrGigBag": "",
-            "modificationsRepairs": "",
-            "uniqueFeatures": ""
-          }
-        }
-      }
+1. OVERVIEW
+- Manufacturer
+- Model
+- Body Size/Shape
+- Series
+- Build Type
+- Top Material
+- Body Material
+- Scale Length
+- Nut Width
+- Neck Shape Profile
+- Neck Type/Construction
+- Pickup Configuration
+- Country of Origin
+- Serial Number
 
-      IMPORTANT: Return ONLY the JSON object, with no additional text or formatting.
-      Only include fields that are present in the specifications. Leave other fields as empty strings or false for boolean values.
-      Here are the specifications to parse:
+2. TOP
+- Color
+- Finish
+- Binding
+- Inlay Material
+- Detail
+- Bridge Style
+- Rosette
+- Bridge String Spacing
+- Bridge Material
+- Bridge Pin Material
+- Bridge Pin Dots
+- Saddle
+- Saddle Radius
 
-      ${specs}
-    `;
+3. BODY
+Design:
+- Color (Back & Sides)
+- Finish (Back & Sides)
+- Binding
+- Back Purfling
+- Back Inlay Material
+- Back Detail
+- Side Detail
+- Side Inlay Material
+- Endpiece
+- Endpiece Inlay
+- Heelcap
 
+Bracing:
+- Body Bracing
+- Bracing Pattern
+- Brace Shape
+- Brace Material
+- Brace Size
+
+Dimensions:
+- Body Depth
+- Upper Bout Width
+- Upper Bout Depth
+- Lower Bout Width
+- Lower Bout Depth
+
+4. NECK & HEADSTOCK
+Neck:
+- Taper
+- Material
+- Color
+- Finish
+- Binding
+- Number of Frets
+- Joins Body At
+- Side Dots
+- Truss Rod Type
+- Nut Material
+
+Fingerboard:
+- Material
+- Radius
+- Width at 12th Fret
+- Inlay Style
+- Inlay Material
+- Binding Material
+- Rolled Edges
+- Fret Size
+- Fret Marker Style
+
+Headstock:
+- Shape
+- Plate Material
+- Logo Style
+- Binding Material
+- Detail
+
+5. ELECTRONICS
+- Acoustic Pickup
+- Number of Pickups
+- Bridge Pickup
+- Middle Pickup
+- Neck Pickup
+- Pickup Color
+- Controls
+- Pickup Switching
+- Output Type
+- Special Electronics
+
+6. HARDWARE
+- Bridge
+- Finish
+- Tuning Machines
+- Tuning Machine Knobs
+- Tailpiece
+- Pickguard
+- Pickguard Inlay
+- Control Knobs
+- Switch Tip
+- Neck Plate
+- Strap Buttons
+
+7. MISCELLANEOUS
+- Pleked (true/false)
+- Label
+- Case
+- Recommended Strings
+- Weight
+- Orientation
+- Comments
+
+Format your response as a JSON object with these exact field names and structure. Use empty strings for unknown values. For boolean fields, use false if unknown.
+
+Input specifications:
+{input_text}`;
+
+  constructor() {
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_AI_API_KEY);
+    this.model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  }
+
+  private cleanSpecificationText(text: string): string {
+    return text
+      .replace(/\r\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  private parseKeyValue(line: string): [string, string] {
+    const parts = line.split(':');
+    if (parts.length < 2) return ['', ''];
+    
+    const key = parts[0].trim();
+    const value = parts.slice(1).join(':').trim();
+    return [key, value];
+  }
+
+  private camelCase(str: string): string {
+    return str.toLowerCase()
+      .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+  }
+
+  private parseTableToSpecs(tableText: string): any {
     try {
-      console.log('Sending prompt to Gemini:', prompt);
-      const geminiResult = await this.model.generateContent(prompt);
-      const response = await geminiResult.response;
-      const text = response.text();
-      console.log('Raw Gemini response:', text);
+      // Remove markdown code block syntax if present
+      const cleanJson = tableText.replace(/^```json\n/, '').replace(/\n```$/, '');
       
-      // Extract JSON from the response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        console.error('No JSON found in response:', text);
-        throw new Error('Could not parse gear specifications');
-      }
-
-      console.log('Extracted JSON:', jsonMatch[0]);
-      const parsedData = JSON.parse(jsonMatch[0]);
-
-      // Convert the type string to GearType enum
-      const gearType = Object.values(GearType).find(
-        type => type.toLowerCase() === parsedData.type?.toLowerCase()
-      ) || GearType.Other;
-
-      // Ensure specs object has the correct structure
-      const specs = {
-        body: {
-          shape: parsedData.specs?.body?.shape || '',
-          type: parsedData.specs?.body?.type || '',
-          material: parsedData.specs?.body?.material || '',
-          topBack: parsedData.specs?.body?.topBack || '',
-          finish: parsedData.specs?.body?.finish || '',
-          depth: parsedData.specs?.body?.depth || '',
-          binding: parsedData.specs?.body?.binding || '',
-          bracing: parsedData.specs?.body?.bracing || '',
-          cutaway: parsedData.specs?.body?.cutaway || '',
-          topColor: parsedData.specs?.body?.topColor || ''
+      // Parse the JSON response
+      const parsedData = JSON.parse(cleanJson);
+      
+      // Create the exact structure expected by the app
+      return {
+        type: "Guitar",
+        make: parsedData.OVERVIEW?.Manufacturer || "",
+        model: parsedData.OVERVIEW?.Model || "",
+        specs: {
+          overview: {
+            manufacturer: parsedData.OVERVIEW?.Manufacturer || "",
+            model: parsedData.OVERVIEW?.Model || "",
+            bodySizeShape: parsedData.OVERVIEW?.["Body Size/Shape"] || "",
+            series: parsedData.OVERVIEW?.Series || "",
+            buildType: parsedData.OVERVIEW?.["Build Type"] || "",
+            topMaterial: parsedData.OVERVIEW?.["Top Material"] || "",
+            bodyMaterial: parsedData.OVERVIEW?.["Body Material"] || "",
+            scaleLength: parsedData.OVERVIEW?.["Scale Length"] || "",
+            nutWidth: parsedData.OVERVIEW?.["Nut Width"] || "",
+            neckShapeProfile: parsedData.OVERVIEW?.["Neck Shape Profile"] || "",
+            neckTypeConstruction: parsedData.OVERVIEW?.["Neck Type/Construction"] || "",
+            pickupConfiguration: parsedData.OVERVIEW?.["Pickup Configuration"] || "",
+            countryOfOrigin: parsedData.OVERVIEW?.["Country of Origin"] || "",
+            serialNumber: parsedData.OVERVIEW?.["Serial Number"] || "",
+          },
+          top: {
+            color: parsedData.TOP?.Color || "",
+            finish: parsedData.TOP?.Finish || "",
+            binding: parsedData.TOP?.Binding || "",
+            inlayMaterial: parsedData.TOP?.["Inlay Material"] || "",
+            detail: parsedData.TOP?.Detail || "",
+            bridgeStyle: parsedData.TOP?.["Bridge Style"] || "",
+            rosette: parsedData.TOP?.Rosette || "",
+            bridgeStringSpacing: parsedData.TOP?.["Bridge String Spacing"] || "",
+            bridgeMaterial: parsedData.TOP?.["Bridge Material"] || "",
+            bridgePinMaterial: parsedData.TOP?.["Bridge Pin Material"] || "",
+            bridgePinDots: parsedData.TOP?.["Bridge Pin Dots"] || "",
+            saddle: parsedData.TOP?.Saddle || "",
+            saddleRadius: parsedData.TOP?.["Saddle Radius"] || "",
+          },
+          body: {
+            design: {
+              color: parsedData.BODY?.Design?.["Color (Back & Sides)"] || "",
+              finish: parsedData.BODY?.Design?.["Finish (Back & Sides)"] || "",
+              binding: parsedData.BODY?.Design?.Binding || "",
+              backPurfling: parsedData.BODY?.Design?.["Back Purfling"] || "",
+              backInlayMaterial: parsedData.BODY?.Design?.["Back Inlay Material"] || "",
+              backDetail: parsedData.BODY?.Design?.["Back Detail"] || "",
+              sideDetail: parsedData.BODY?.Design?.["Side Detail"] || "",
+              sideInlayMaterial: parsedData.BODY?.Design?.["Side Inlay Material"] || "",
+              endpiece: parsedData.BODY?.Design?.Endpiece || "",
+              endpieceInlay: parsedData.BODY?.Design?.["Endpiece Inlay"] || "",
+              heelcap: parsedData.BODY?.Design?.Heelcap || "",
+            },
+            bracing: {
+              bodyBracing: parsedData.BODY?.Bracing?.["Body Bracing"] || "",
+              bracingPattern: parsedData.BODY?.Bracing?.["Bracing Pattern"] || "",
+              braceShape: parsedData.BODY?.Bracing?.["Brace Shape"] || "",
+              braceMaterial: parsedData.BODY?.Bracing?.["Brace Material"] || "",
+              braceSize: parsedData.BODY?.Bracing?.["Brace Size"] || "",
+            },
+            dimensions: {
+              bodyDepth: parsedData.BODY?.Dimensions?.["Body Depth"] || "",
+              upperBoutWidth: parsedData.BODY?.Dimensions?.["Upper Bout Width"] || "",
+              upperBoutDepth: parsedData.BODY?.Dimensions?.["Upper Bout Depth"] || "",
+              lowerBoutWidth: parsedData.BODY?.Dimensions?.["Lower Bout Width"] || "",
+              lowerBoutDepth: parsedData.BODY?.Dimensions?.["Lower Bout Depth"] || "",
+            },
+          },
+          neckAndHeadstock: {
+            neck: {
+              taper: parsedData["NECK & HEADSTOCK"]?.Neck?.Taper || "",
+              material: parsedData["NECK & HEADSTOCK"]?.Neck?.Material || "",
+              color: parsedData["NECK & HEADSTOCK"]?.Neck?.Color || "",
+              finish: parsedData["NECK & HEADSTOCK"]?.Neck?.Finish || "",
+              binding: parsedData["NECK & HEADSTOCK"]?.Neck?.Binding || "",
+              numberOfFrets: parsedData["NECK & HEADSTOCK"]?.Neck?.["Number of Frets"] || "",
+              joinsBodyAt: parsedData["NECK & HEADSTOCK"]?.Neck?.["Joins Body At"] || "",
+              sideDots: parsedData["NECK & HEADSTOCK"]?.Neck?.["Side Dots"] || "",
+              trussRodType: parsedData["NECK & HEADSTOCK"]?.Neck?.["Truss Rod Type"] || "",
+              nutMaterial: parsedData["NECK & HEADSTOCK"]?.Neck?.["Nut Material"] || "",
+            },
+            fingerboard: {
+              material: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.Material || "",
+              radius: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.Radius || "",
+              widthAt12thFret: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Width at 12th Fret"] || "",
+              inlayStyle: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Inlay Style"] || "",
+              inlayMaterial: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Inlay Material"] || "",
+              bindingMaterial: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Binding Material"] || "",
+              rolledEdges: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Rolled Edges"] || false,
+              fretSize: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Fret Size"] || "",
+              fretMarkerStyle: parsedData["NECK & HEADSTOCK"]?.Fingerboard?.["Fret Marker Style"] || "",
+            },
+            headstock: {
+              shape: parsedData["NECK & HEADSTOCK"]?.Headstock?.Shape || "",
+              plateMaterial: parsedData["NECK & HEADSTOCK"]?.Headstock?.["Plate Material"] || "",
+              logoStyle: parsedData["NECK & HEADSTOCK"]?.Headstock?.["Logo Style"] || "",
+              bindingMaterial: parsedData["NECK & HEADSTOCK"]?.Headstock?.["Binding Material"] || "",
+              detail: parsedData["NECK & HEADSTOCK"]?.Headstock?.Detail || "",
+            },
+          },
+          electronics: {
+            acousticPickup: parsedData.ELECTRONICS?.["Acoustic Pickup"] || "",
+            numberOfPickups: parsedData.ELECTRONICS?.["Number of Pickups"] || "",
+            bridgePickup: parsedData.ELECTRONICS?.["Bridge Pickup"] || "",
+            middlePickup: parsedData.ELECTRONICS?.["Middle Pickup"] || "",
+            neckPickup: parsedData.ELECTRONICS?.["Neck Pickup"] || "",
+            pickupColor: parsedData.ELECTRONICS?.["Pickup Color"] || "",
+            controls: parsedData.ELECTRONICS?.Controls || "",
+            pickupSwitching: parsedData.ELECTRONICS?.["Pickup Switching"] || "",
+            outputType: parsedData.ELECTRONICS?.["Output Type"] || "",
+            specialElectronics: parsedData.ELECTRONICS?.["Special Electronics"] || "",
+          },
+          hardware: {
+            bridge: parsedData.HARDWARE?.Bridge || "",
+            finish: parsedData.HARDWARE?.Finish || "",
+            tuningMachines: parsedData.HARDWARE?.["Tuning Machines"] || "",
+            tuningMachineKnobs: parsedData.HARDWARE?.["Tuning Machine Knobs"] || "",
+            tailpiece: parsedData.HARDWARE?.Tailpiece || "",
+            pickguard: parsedData.HARDWARE?.Pickguard || "",
+            pickguardInlay: parsedData.HARDWARE?.["Pickguard Inlay"] || "",
+            controlKnobs: parsedData.HARDWARE?.["Control Knobs"] || "",
+            switchTip: parsedData.HARDWARE?.["Switch Tip"] || "",
+            neckPlate: parsedData.HARDWARE?.["Neck Plate"] || "",
+            strapButtons: parsedData.HARDWARE?.["Strap Buttons"] || "",
+          },
+          miscellaneous: {
+            pleked: parsedData.MISCELLANEOUS?.Pleked || false,
+            label: parsedData.MISCELLANEOUS?.Label || "",
+            case: parsedData.MISCELLANEOUS?.Case || "",
+            recommendedStrings: parsedData.MISCELLANEOUS?.["Recommended Strings"] || "",
+            weight: parsedData.MISCELLANEOUS?.Weight || "",
+            orientation: parsedData.MISCELLANEOUS?.Orientation || "",
+            comments: parsedData.MISCELLANEOUS?.Comments || "",
+          },
         },
-        neck: {
-          material: parsedData.specs?.neck?.material || '',
-          shape: parsedData.specs?.neck?.shape || '',
-          thickness: parsedData.specs?.neck?.thickness || '',
-          construction: parsedData.specs?.neck?.construction || '',
-          finish: parsedData.specs?.neck?.finish || '',
-          scaleLength: parsedData.specs?.neck?.scaleLength || '',
-          fingerboardMaterial: parsedData.specs?.neck?.fingerboard?.material || '',
-          fingerboardRadius: parsedData.specs?.neck?.fingerboard?.radius || '',
-          numberOfFrets: parsedData.specs?.neck?.numberOfFrets || '',
-          fretSize: parsedData.specs?.neck?.fretSize || '',
-          nutMaterial: parsedData.specs?.neck?.nut?.material || '',
-          nutWidth: parsedData.specs?.neck?.nut?.width || '',
-          fingerboardInlays: parsedData.specs?.neck?.fingerboard?.inlays || '',
-          binding: parsedData.specs?.neck?.fingerboard?.binding || '',
-          sideDots: parsedData.specs?.neck?.fingerboard?.sideDots || ''
-        },
-        headstock: {
-          shape: parsedData.specs?.headstock?.shape || '',
-          binding: parsedData.specs?.headstock?.binding || '',
-          tuningMachines: parsedData.specs?.headstock?.tuningMachines || '',
-          headplateLogo: parsedData.specs?.headstock?.headplateLogo || ''
-        },
-        hardware: {
-          bridge: parsedData.specs?.hardware?.bridge || '',
-          tailpiece: parsedData.specs?.hardware?.tailpiece || '',
-          finish: parsedData.specs?.hardware?.finish || '',
-          pickguard: parsedData.specs?.hardware?.pickguard?.type || '',
-          knobs: parsedData.specs?.hardware?.knobs || '',
-          strapButtons: parsedData.specs?.hardware?.strapButtons || ''
-        },
-        electronics: {
-          pickupSystem: parsedData.specs?.electronics?.pickupSystem || '',
-          neckPickup: parsedData.specs?.electronics?.neckPickup || '',
-          bridgePickup: parsedData.specs?.electronics?.bridgePickup || '',
-          pickupConfiguration: parsedData.specs?.electronics?.pickupConfiguration || '',
-          controls: parsedData.specs?.electronics?.controls || '',
-          pickupSwitching: parsedData.specs?.electronics?.pickupSwitching || '',
-          auxiliarySwitching: parsedData.specs?.electronics?.auxiliarySwitching || ''
-        },
-        extras: {
-          strings: parsedData.specs?.extras?.strings || '',
-          caseOrGigBag: parsedData.specs?.extras?.caseOrGigBag || '',
-          modificationsRepairs: parsedData.specs?.extras?.modificationsRepairs || '',
-          uniqueFeatures: parsedData.specs?.extras?.uniqueFeatures || ''
-        }
       };
-
-      const finalResult = {
-        type: gearType,
-        make: parsedData.make || '',
-        model: parsedData.model || '',
-        year: parsedData.year || '',
-        modelNumber: parsedData.modelNumber || '',
-        series: parsedData.series || '',
-        serialNumber: parsedData.serialNumber || '',
-        orientation: parsedData.orientation || '',
-        numberOfStrings: parsedData.numberOfStrings || '',
-        weight: parsedData.weight || '',
-        description: parsedData.description || '',
-        specs
-      };
-
-      console.log('Final parsed result:', finalResult);
-      return finalResult;
     } catch (error) {
-      console.error('Error parsing gear specifications:', error);
-      if (error instanceof Error) {
-        console.error('Error details:', {
-          message: error.message,
-          stack: error.stack
-        });
-      }
-      throw new Error('Failed to parse gear specifications');
+      console.error('Error parsing table specs:', error);
+      throw new Error('Failed to parse specification table');
     }
   }
 
-  async parseGearHistory(input: string, gear: BaseGear) {
+  async parseGearSpecs(text: string): Promise<any> {
+    console.log('=== Starting parseGearSpecs ===');
+    console.log('Input text:', text);
+
+    const cleanedText = this.cleanSpecificationText(text);
+    console.log('Cleaned text:', cleanedText);
+
+    const prompt = `${this.PARSE_PROMPT}
+
+${cleanedText}`;
+    console.log('Generated prompt:', prompt);
+
     try {
-      const today = new Date();
-      today.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
-      
-      // Get current year and format today's date
-      const currentYear = today.getFullYear();
-      const todayFormatted = today.toISOString().split('T')[0];
-
-      const prompt = `You are a musical gear expert. Parse the following text about a ${gear.type} (${gear.make} ${gear.model}) and extract information about service, maintenance, modifications, or ownership changes.
-
-Return ONLY a JSON object (no markdown formatting, no code blocks) with this structure:
-{
-  "date": "extracted date in YYYY-MM-DD format. IMPORTANT RULES FOR DATES:
-    - Today is ${todayFormatted}
-    - For relative dates like 'last Monday', calculate the exact date relative to today (${todayFormatted})
-    - For 'yesterday', use exactly one day before today
-    - For specific dates like 'December 7th', use that exact date with ${currentYear}
-    - For past dates like 'last week' or 'two days ago', calculate precisely from today
-    - Default to today's date ONLY if no date is mentioned at all",
-  "description": "detailed description of what was done",
-  "provider": "service provider or person who did the work",
-  "cost": number,
-  "tags": ["array of applicable tags: ownership, modification, maintenance, repairs. IMPORTANT RULES FOR TAGS:
-    - Use 'ownership' for acquisitions, sales, and transfers
-    - Use 'modification' for upgrades and customizations
-    - Use 'maintenance' for routine care and expected upkeep
-    - Use 'repairs' for unexpected fixes or damage recovery"],
-  "notes": "additional notes or context"
-}
-
-Examples of date handling:
-1. "last Monday" = the most recent Monday before today
-2. "yesterday" = exactly one day before today
-3. "last week" = exactly 7 days before today
-4. "two days ago" = exactly 2 days before today
-5. "December 7th" = ${currentYear}-12-07
-
-Guidelines for parsing:
-1. For dates:
-   - Calculate relative dates (like "last Monday") based on today (${todayFormatted})
-   - Never change explicitly mentioned dates
-   - Include leading zeros for single-digit months and days
-   - Use noon (12:00) for all times to avoid timezone issues
-2. For tags:
-   - Use 'ownership' for acquisitions, sales, and transfers
-   - Use 'modification' for upgrades and customizations
-   - Use 'maintenance' for routine care and expected upkeep
-   - Use 'repairs' for unexpected fixes or damage recovery
-3. For costs:
-   - Extract any mentioned prices
-   - Include only the numeric value
-
-IMPORTANT: Return ONLY the JSON object, with no additional text or formatting.
-
-Input text: "${input}"`;
-
+      console.log('Sending request to Gemini...');
       const result = await this.model.generateContent(prompt);
-      const response = result.response;
-      const text = response.text();
-      
-      // Clean up the response text
-      const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-      
-      try {
-        // Parse the response into a record
-        const record = JSON.parse(cleanText);
-        
-        // Convert date string to Date object
-        if (record.date) {
-          try {
-            // Parse the date string and create a date object
-            const [year, month, day] = record.date.split('-').map(Number);
-            const date = new Date(year, month - 1, day, 12, 0, 0, 0); // Use noon to avoid timezone issues
-            
-            if (isNaN(date.getTime())) {
-              record.date = today;
-            } else {
-              record.date = date;
-            }
-          } catch {
-            record.date = today;
-          }
-        } else {
-          record.date = today;
-        }
+      console.log('Raw Gemini response:', result);
 
-        // Ensure tags array exists
-        if (!record.tags || !Array.isArray(record.tags)) {
-          record.tags = [];
-        }
+      const response = await result.response;
+      console.log('Extracted response:', response);
 
-        // Normalize tags to lowercase
-        record.tags = record.tags.map(tag => tag.toLowerCase());
+      const tableText = response.text();
+      console.log('Response text:', tableText);
 
-        // Add timestamp-based ID
-        record.id = Date.now().toString();
+      const specs = this.parseTableToSpecs(tableText);
+      console.log('Final processed result:', specs);
 
-        return record;
-      } catch (parseError) {
-        console.error('JSON Parse Error:', parseError, 'Clean Text:', cleanText);
-        throw new Error('Failed to parse gear history. The response format was invalid.');
-      }
+      return specs;
     } catch (error) {
-      console.error('Error parsing gear history:', error);
-      throw new Error('Failed to parse gear history. Please try again with more specific information.');
-    }
-  }
-
-  async queryCollection(query: string, gear: BaseGear[], wishlist: BaseGear[]) {
-    try {
-      const collectionContext = `
-You are a knowledgeable and friendly guitar collection assistant. You should respond in a natural, conversational way while being precise about the details. Here's the current state of the collection:
-
-Currently Owned Gear (${gear.filter(g => g.status === 'own').length} items):
-${gear.filter(g => g.status === 'own').map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})
-  * Type: ${item.type}
-  * Body: ${item.specs?.body?.material ? `Made of ${item.specs.body.material}` : 'Material not specified'}
-  * Neck: ${item.specs?.neck?.material ? `${item.specs.neck.material} neck` : 'Neck material not specified'}
-  * Fingerboard: ${item.specs?.neck?.fingerboard?.material ? `${item.specs.neck.fingerboard.material} fingerboard` : 'Fingerboard material not specified'}
-  * Finish: ${item.specs?.body?.finish || 'Not specified'}
-  * Description: ${item.description || 'Not specified'}
-  * Service History: ${(item.serviceHistory || []).map(record => 
-      `\n    - ${new Date(record.date).toLocaleDateString()}: ${record.description}`
-    ).join('')}
-`).join('\n')}
-
-Want List (${gear.filter(g => g.status === 'want').length} items):
-${gear.filter(g => g.status === 'want').map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})
-  * Type: ${item.type}
-  * Body: ${item.specs?.body?.material ? `Made of ${item.specs.body.material}` : 'Material not specified'}
-  * Neck: ${item.specs?.neck?.material ? `${item.specs.neck.material} neck` : 'Neck material not specified'}
-  * Fingerboard: ${item.specs?.neck?.fingerboard?.material ? `${item.specs.neck.fingerboard.material} fingerboard` : 'Fingerboard material not specified'}
-  * Finish: ${item.specs?.body?.finish || 'Not specified'}
-  * Description: ${item.description || 'Not specified'}
-`).join('\n')}
-
-Previously Owned/Sold (${gear.filter(g => g.status === 'sold').length} items):
-${gear.filter(g => g.status === 'sold').map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})
-  * Type: ${item.type}
-  * Body: ${item.specs?.body?.material ? `Made of ${item.specs.body.material}` : 'Material not specified'}
-  * Neck: ${item.specs?.neck?.material ? `${item.specs.neck.material} neck` : 'Neck material not specified'}
-  * Fingerboard: ${item.specs?.neck?.fingerboard?.material ? `${item.specs.neck.fingerboard.material} fingerboard` : 'Fingerboard material not specified'}
-  * Finish: ${item.specs?.body?.finish || 'Not specified'}
-  * Description: ${item.description || 'Not specified'}
-`).join('\n')}
-
-Instructions for responding:
-1. Be conversational and friendly while maintaining accuracy
-2. Always distinguish between currently owned instruments and those on the want list or previously sold
-3. When answering questions about features or characteristics:
-   - First mention what you find in the currently owned collection
-   - Then mention any relevant items from the want list
-   - Finally, mention any relevant previously owned items
-4. For questions about modifications or service history, focus on currently owned instruments unless specifically asked about others
-5. Use natural language and complete sentences
-6. NEVER make assumptions about specifications that aren't explicitly listed
-7. If a specification isn't listed, say "that information isn't specified" rather than guessing
-
-For example, if asked "Do I have any black guitars?", respond like:
-"No, you don't currently own any black guitars. However, I see that the Martin D-35 Johnny Cash model on your want list is black."
-
-Question: ${query}`;
-
-      const result = await this.model.generateContent(collectionContext);
-      const response = result.response;
-      return response.text();
-    } catch (error) {
-      console.error('Error querying collection:', error);
-      throw new Error('Failed to analyze collection. Please try again.');
+      console.error('Error in parseGearSpecs:', error);
+      throw error;
     }
   }
 }

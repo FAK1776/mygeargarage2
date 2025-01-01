@@ -1,24 +1,77 @@
-name: Deploy to Firebase
+name: Deploy to Firebase Production
+
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'  # Deploy on version tags
+  workflow_dispatch:  # Allow manual triggers
+
+env:
+  NODE_VERSION: '18'
 
 jobs:
-  build_and_deploy:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
         run: npm ci
+        
+      - name: Security Audit
+        run: npm audit
+        continue-on-error: false  # Fail if security issues found
+
+      - name: Run Linter
+        run: npm run lint
+        continue-on-error: false  # Strict linting for production
+
+      - name: Run Tests
+        run: npm test
+        continue-on-error: false
+        
+      - name: Type Check
+        run: npm run type-check
+        continue-on-error: false
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Copy Production Environment
+        run: cp .env.production .env
 
       - name: Build
         run: npm run build
@@ -29,11 +82,37 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          NODE_ENV: production
 
-      - name: Deploy to Firebase
+      - name: Deploy to Firebase Production
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          channelId: live
           projectId: my-gear-garage
+          channelId: live
+          target: production
+          
+      - name: Create Release Notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "## Deployment Details" > ${{ github.workspace }}-RELEASE_NOTES.md
+          echo "**Tag:** ${GITHUB_REF#refs/tags/}" >> ${{ github.workspace }}-RELEASE_NOTES.md
+          echo "**Deployment Status:** ✅ Successfully deployed to production" >> ${{ github.workspace }}-RELEASE_NOTES.md
+          
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ github.workspace }}-RELEASE_NOTES.md
+          body_path: ${{ github.workspace }}-RELEASE_NOTES.md
+          
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "::notice::🚀 Successfully deployed to production"
+          
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "::error::❌ Production deployment failed"

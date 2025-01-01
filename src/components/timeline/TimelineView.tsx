@@ -239,23 +239,22 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ gear, onUpdate }) =>
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          type="text"
-          placeholder="Search events..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-xs"
-        />
-        <div className="flex flex-col gap-1">
-          <label htmlFor="instrument-filter" className="text-sm text-gray-600">
-            Filter by Instrument
-          </label>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="relative flex-1">
+          <Input
+            type="text"
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full sm:w-64">
           <select
             id="instrument-filter"
             value={selectedInstrument}
             onChange={(e) => setSelectedInstrument(e.target.value)}
-            className="px-4 py-2 rounded-md border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#EE5430] focus:border-transparent"
+            className="w-full px-4 py-2 rounded-md border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#EE5430] focus:border-transparent"
           >
             {instruments.map(instrument => (
               <option key={instrument} value={instrument}>
