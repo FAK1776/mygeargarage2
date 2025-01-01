@@ -35,10 +35,26 @@ My Gear Garage is a web application designed for musicians to track their gear c
 
 ### 3. Timeline Functionality
 - Chronological display of all gear-related events
-- Event type filtering
-- Visual timeline with year markers
-- Image display for events
+- Comprehensive event filtering:
+  - By event type (ownership, maintenance, etc.)
+  - By instrument with standardized names
+  - By text search across descriptions and providers
+- Color-coded event categories:
+  - Ownership events (blue)
+  - Maintenance events (green)
+  - Modification events (purple)
+  - Repair events (orange)
+- Consistent event card layout:
+  - Event type badges
+  - Instrument details
+  - Cost information
+  - Provider details
+- Visual timeline with year grouping
+- Image display for ownership events
 - Narrative event descriptions
+- Direct access to gear details
+- Proper event type mapping with gear history
+- Standardized manufacturer names across the application
 
 ### 4. User Profile & Analytics
 - Collection statistics dashboard

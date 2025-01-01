@@ -10,12 +10,18 @@ export class GearService {
 
   private convertToGear(doc: DocumentData): BaseGear {
     const data = doc.data();
+    console.log('Converting Firestore doc to Gear object:', { docId: doc.id, rawData: data });
     
     // Convert service history dates
-    const serviceHistory = data.serviceHistory?.map((record: any) => ({
-      ...record,
-      date: record.date?.toDate?.() || record.date || null
-    })) || [];
+    const serviceHistory = data.serviceHistory?.map((record: any) => {
+      console.log('Processing service history record:', record);
+      return {
+        ...record,
+        date: record.date?.toDate?.() || record.date || null
+      };
+    }) || [];
+
+    console.log('Processed service history:', serviceHistory);
 
     return {
       id: doc.id,
@@ -31,9 +37,12 @@ export class GearService {
   }
 
   async getUserGear(userId: string): Promise<BaseGear[]> {
+    console.log('Fetching gear for user:', userId);
     const q = query(this.gearCollection, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => this.convertToGear(doc));
+    const gear = querySnapshot.docs.map(doc => this.convertToGear(doc));
+    console.log('Retrieved gear items:', gear.length);
+    return gear;
   }
 
   async addGear(userId: string, gear: Omit<BaseGear, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
@@ -128,65 +137,35 @@ export class GearService {
   }
 
   async updateGear(userId: string, gearId: string, updates: Partial<BaseGear>): Promise<void> {
-    if (!userId || !gearId) {
-      throw new Error('User ID and Gear ID are required for updating gear');
-    }
-
-    console.log('GearService - updateGear - Initial value:', {
-      specs: updates.specs,
-      bodySizeShape: updates.specs?.overview?.bodySizeShape
-    });
-
-    // Convert dates to Timestamps
-    const updatesWithDates = { ...updates };
-    if (updates.dateAcquired) {
-      updatesWithDates.dateAcquired = updates.dateAcquired instanceof Date 
-        ? Timestamp.fromDate(updates.dateAcquired) 
-        : updates.dateAcquired;
-    }
-    if (updates.dateSold) {
-      updatesWithDates.dateSold = updates.dateSold instanceof Date 
-        ? Timestamp.fromDate(updates.dateSold) 
-        : updates.dateSold;
-    }
+    console.log('Updating gear:', { userId, gearId, updates });
+    
+    // Convert service history dates to Timestamps if present
+    const processedUpdates = { ...updates };
     if (updates.serviceHistory) {
-      updatesWithDates.serviceHistory = updates.serviceHistory.map(record => ({
+      console.log('Processing service history for update:', updates.serviceHistory);
+      processedUpdates.serviceHistory = updates.serviceHistory.map(record => ({
         ...record,
         date: record.date instanceof Date ? Timestamp.fromDate(record.date) : record.date
       }));
+      console.log('Processed service history for update:', processedUpdates.serviceHistory);
     }
-    updatesWithDates.updatedAt = Timestamp.now();
 
-    console.log('GearService - updateGear - Before Firestore update:', {
-      specs: updatesWithDates.specs,
-      bodySizeShape: updatesWithDates.specs?.overview?.bodySizeShape
+    // Clean undefined values
+    const cleanedUpdates = Object.entries(processedUpdates).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    console.log('Cleaned updates for Firestore:', cleanedUpdates);
+
+    const docRef = doc(this.gearCollection, gearId);
+    await updateDoc(docRef, {
+      ...cleanedUpdates,
+      updatedAt: Timestamp.now()
     });
-
-    // Clean undefined values from updates
-    const cleanedUpdates = this.cleanUndefined(updatesWithDates);
-    
-    console.log('GearService - updateGear - After cleaning:', {
-      specs: cleanedUpdates.specs,
-      bodySizeShape: cleanedUpdates.specs?.overview?.bodySizeShape
-    });
-
-    if (Object.keys(cleanedUpdates).length === 0) return;
-
-    const gearRef = doc(this.gearCollection, gearId);
-    
-    // Verify gear exists and ownership before updating
-    const gearDoc = await getDoc(gearRef);
-    if (!gearDoc.exists()) {
-      throw new Error('Gear not found');
-    }
-    
-    // Verify ownership
-    const gearData = gearDoc.data();
-    if (gearData.userId !== userId) {
-      throw new Error('Unauthorized to update this gear');
-    }
-
-    await updateDoc(gearRef, cleanedUpdates);
+    console.log('Gear update completed');
   }
 
   async getUserWishlist(userId: string): Promise<BaseGear[]> {
@@ -219,12 +198,17 @@ export class GearService {
     });
   }
 
-  async addImage(userId: string, gearId: string, file: File): Promise<Partial<BaseGear>> {
+  async addImages(userId: string, gearId: string, files: File[]): Promise<Partial<BaseGear>> {
     if (!userId || !gearId) {
       throw new Error('User ID and Gear ID are required for adding images');
     }
 
     try {
+      console.log('Starting batch image upload:', {
+        numberOfFiles: files.length,
+        gearId
+      });
+
       // Get current gear document to get existing images
       const gearRef = doc(this.gearCollection, gearId);
       const gearDoc = await getDoc(gearRef);
@@ -233,27 +217,42 @@ export class GearService {
       }
       const currentImages = gearDoc.data().images || [];
 
-      // Compress the image
-      const compressedImage = await this.compressImage(file);
+      // Process all images sequentially to maintain order
+      const newImages = [];
+      for (const file of files) {
+        console.log('Processing file:', {
+          name: file.name,
+          size: file.size
+        });
 
-      // Convert base64 to blob
-      const response = await fetch(compressedImage);
-      const blob = await response.blob();
+        // Compress the image
+        const compressedImage = await this.compressImage(file);
 
-      // Create a unique filename
-      const timestamp = Date.now();
-      const filename = `${userId}/${gearId}/${timestamp}_${file.name}`;
-      const imageRef = ref(storage, filename);
+        // Convert base64 to blob
+        const response = await fetch(compressedImage);
+        const blob = await response.blob();
 
-      // Upload to Firebase Storage
-      await uploadBytes(imageRef, blob);
-      const url = await getDownloadURL(imageRef);
+        // Create a unique filename with sanitized name
+        const timestamp = Date.now();
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+        const filename = `${userId}/${gearId}/${timestamp}_${sanitizedFileName}`;
+        const imageRef = ref(storage, filename);
 
-      // Create new image data
-      const imageData = { url, path: filename, timestamp };
-      
-      // Combine with existing images
-      const updatedImages = [...currentImages, imageData];
+        // Upload to Firebase Storage
+        await uploadBytes(imageRef, blob);
+        const url = await getDownloadURL(imageRef);
+
+        // Add to new images array
+        newImages.push({ url, path: filename, timestamp });
+      }
+
+      // Combine with existing images in a single update
+      const updatedImages = [...currentImages, ...newImages];
+
+      console.log('Updating Firestore with new images:', {
+        newImagesCount: newImages.length,
+        totalImages: updatedImages.length
+      });
 
       // Update the gear document with all images
       await updateDoc(gearRef, {
@@ -263,8 +262,8 @@ export class GearService {
 
       return { images: updatedImages };
     } catch (error) {
-      console.error('Error adding image:', error);
-      throw new Error('Failed to add image');
+      console.error('Error adding images:', error);
+      throw new Error('Failed to add images');
     }
   }
 
@@ -274,17 +273,43 @@ export class GearService {
     }
 
     try {
-      // Delete from storage
-      const imageRef = ref(storage, imagePath);
-      await deleteObject(imageRef);
+      console.log('Starting image deletion:', { imagePath, gearId });
 
-      // Update gear document
+      // Get current gear document
       const gearRef = doc(this.gearCollection, gearId);
-      await updateDoc(gearRef, {
-        images: arrayRemove({ path: imagePath })
+      const gearDoc = await getDoc(gearRef);
+      
+      if (!gearDoc.exists()) {
+        throw new Error('Gear not found');
+      }
+
+      const currentImages = gearDoc.data().images || [];
+      console.log('Current images before deletion:', {
+        count: currentImages.length,
+        paths: currentImages.map(img => img.path)
       });
+
+      // First update Firestore to remove the image reference
+      const updatedImages = currentImages.filter(img => img.path !== imagePath);
+      await updateDoc(gearRef, {
+        images: updatedImages,
+        updatedAt: Timestamp.now()
+      });
+
+      console.log('Updated Firestore, removing image reference');
+
+      // Then try to delete from storage
+      try {
+        const imageRef = ref(storage, imagePath);
+        await deleteObject(imageRef);
+        console.log('Successfully deleted image from Storage');
+      } catch (storageError) {
+        // Log but don't throw - the image might already be deleted from storage
+        console.warn('Could not delete image from Storage:', storageError);
+      }
+
     } catch (error) {
-      console.error('Error deleting image:', error);
+      console.error('Error in deleteImage:', error);
       throw new Error('Failed to delete image');
     }
   }
@@ -294,8 +319,42 @@ export class GearService {
       throw new Error('User ID and Gear ID are required for reordering images');
     }
 
-    const gearRef = doc(this.gearCollection, gearId);
-    await updateDoc(gearRef, { images });
+    try {
+      console.log('Starting image reorder operation:', {
+        gearId,
+        imageCount: images.length,
+        newOrder: images.map(img => img.path)
+      });
+
+      const gearRef = doc(this.gearCollection, gearId);
+      
+      // Verify the gear exists and get current images
+      const gearDoc = await getDoc(gearRef);
+      if (!gearDoc.exists()) {
+        throw new Error('Gear not found');
+      }
+
+      const currentImages = gearDoc.data().images || [];
+      
+      // Verify all images in new order exist in current images
+      const currentPaths = new Set(currentImages.map(img => img.path));
+      const allImagesExist = images.every(img => currentPaths.has(img.path));
+      
+      if (!allImagesExist) {
+        console.error('Image reorder failed - some images do not exist in current set');
+        throw new Error('Invalid image order - some images not found');
+      }
+
+      await updateDoc(gearRef, { 
+        images,
+        updatedAt: Timestamp.now()
+      });
+
+      console.log('Successfully reordered images');
+    } catch (error) {
+      console.error('Error in reorderImages:', error);
+      throw error;
+    }
   }
 
   private async compressImage(file: File): Promise<string> {

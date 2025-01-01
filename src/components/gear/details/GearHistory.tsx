@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BaseGear, HistoryRecord } from '../../../types/gear';
 import { GearHistoryChat } from './GearHistoryChat';
 import { FaEdit, FaTrash, FaSave, FaTimes, FaFilter } from 'react-icons/fa';
 
 interface GearHistoryProps {
   gear: BaseGear;
-  onUpdate: (updates: Partial<BaseGear>) => void;
+  onUpdate: (updates: Partial<BaseGear>, shouldSave?: boolean) => void;
   isEditing: boolean;
 }
 
@@ -23,36 +23,50 @@ export const GearHistory: React.FC<GearHistoryProps> = ({ gear, onUpdate, isEdit
   const [editedValues, setEditedValues] = useState<Partial<HistoryRecord>>({});
   const [selectedTags, setSelectedTags] = useState<HistoryTag[]>([]);
 
+  useEffect(() => {
+    console.log('GearHistory component mounted/updated:', {
+      gearId: gear.id,
+      serviceHistory: gear.serviceHistory
+    });
+  }, [gear]);
+
   const handleEditStart = (record: HistoryRecord) => {
+    console.log('Starting edit of record:', record);
     setEditingRecord(record.id);
     setEditedValues(record);
   };
 
   const handleEditCancel = () => {
+    console.log('Canceling record edit');
     setEditingRecord(null);
     setEditedValues({});
   };
 
   const handleEditSave = (recordId: string) => {
+    console.log('Saving edited record:', { recordId, editedValues });
     if (!gear.serviceHistory) return;
 
     const updatedHistory = gear.serviceHistory.map(record => 
       record.id === recordId ? { ...record, ...editedValues } : record
     );
 
-    onUpdate({ ...gear, serviceHistory: updatedHistory });
+    console.log('Updated service history:', updatedHistory);
+    onUpdate({ ...gear, serviceHistory: updatedHistory }, true);
     setEditingRecord(null);
     setEditedValues({});
   };
 
   const handleDelete = (recordId: string) => {
+    console.log('Deleting record:', recordId);
     if (!gear.serviceHistory) return;
 
     const updatedHistory = gear.serviceHistory.filter(record => record.id !== recordId);
-    onUpdate({ ...gear, serviceHistory: updatedHistory });
+    console.log('Service history after deletion:', updatedHistory);
+    onUpdate({ ...gear, serviceHistory: updatedHistory }, true);
   };
 
   const handleFieldChange = (field: keyof HistoryRecord, value: string | number | string[]) => {
+    console.log('Field change:', { field, value });
     setEditedValues(prev => ({
       ...prev,
       [field]: value
@@ -60,6 +74,7 @@ export const GearHistory: React.FC<GearHistoryProps> = ({ gear, onUpdate, isEdit
   };
 
   const handleTagToggle = (tag: HistoryTag) => {
+    console.log('Toggling tag:', tag);
     setSelectedTags(prev => 
       prev.includes(tag) 
         ? prev.filter(t => t !== tag)
@@ -71,18 +86,28 @@ export const GearHistory: React.FC<GearHistoryProps> = ({ gear, onUpdate, isEdit
     if (!gear.serviceHistory) return [];
 
     let filtered = gear.serviceHistory;
+    console.log('Processing service history:', {
+      total: filtered.length,
+      selectedTags
+    });
     
     // Apply tag filtering
     if (selectedTags.length > 0) {
       filtered = filtered.filter(record => 
         record.tags?.some(tag => selectedTags.includes(tag as HistoryTag))
       );
+      console.log('Filtered by tags:', {
+        selectedTags,
+        remainingRecords: filtered.length
+      });
     }
 
     // Sort by date descending
-    return [...filtered].sort((a, b) => 
+    const sorted = [...filtered].sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
+    console.log('Sorted service history:', sorted);
+    return sorted;
   }, [gear.serviceHistory, selectedTags]);
 
   return (

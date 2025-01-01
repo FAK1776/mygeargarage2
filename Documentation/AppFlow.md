@@ -69,16 +69,35 @@
 
 ### 5. Timeline Integration
 1. Event Creation
-   - Purchase events
-   - Sale events
-   - Service records
-   - Maintenance logs
+   - Purchase events with standardized manufacturer names
+   - Sale events with buyer information
+   - Service records with proper type mapping
+   - Maintenance logs with provider details
    
 2. Timeline View
-   - Chronological ordering
-   - Year markers
-   - Event filtering
-   - Image display
+   - Chronological ordering with year grouping
+   - Color-coded event types matching gear details
+   - Smart event filtering:
+     - By event type (ownership, maintenance, etc.)
+     - By instrument with standardized names
+     - By text search across descriptions and providers
+   - Consistent event card layout:
+     - Event type badges
+     - Instrument details
+     - Cost information
+     - Provider information
+   - Image display for ownership events
+   - Direct access to gear details
+
+3. Event Type Management
+   - Consistent type mapping with gear history
+   - Color-coded event categories:
+     - Ownership (blue)
+     - Maintenance (green)
+     - Modification (purple)
+     - Repairs (orange)
+   - Smart filtering based on event types
+   - Proper type inheritance from service history
 
 ### 6. Data Management Flow
 1. Data Entry

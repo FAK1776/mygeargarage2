@@ -27,6 +27,10 @@ const TimelinePage: React.FC = () => {
     fetchGear();
   }, [user]);
 
+  const handleGearUpdate = (updatedGear: BaseGear) => {
+    setGear(prev => prev.map(g => g.id === updatedGear.id ? updatedGear : g));
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -39,8 +43,8 @@ const TimelinePage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 pt-28">
         <h1 className="text-h1 mb-8">My Timeline</h1>
+        <TimelineView gear={gear} onUpdate={handleGearUpdate} />
       </div>
-      <TimelineView gear={gear} />
     </div>
   );
 };

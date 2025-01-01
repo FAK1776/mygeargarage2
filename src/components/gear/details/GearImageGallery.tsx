@@ -1,15 +1,16 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { BaseGear } from '../../../types/gear';
-import { FaTrash, FaGuitar, FaCloudUploadAlt, FaChevronLeft, FaChevronRight, FaStar, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaGuitar, FaCloudUploadAlt, FaChevronLeft, FaChevronRight, FaStar, FaPlus, FaSpinner } from 'react-icons/fa';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { GearService } from '../../../services/gearService';
 import { useAuth } from '../../../hooks/useAuth';
+import debounce from 'lodash/debounce';
 
 interface GearImageGalleryProps {
   gear: BaseGear;
   onUpdate: (updates: Partial<BaseGear>) => void;
-  onImageUpload: (file: File) => Promise<void>;
+  onImageUpload: (files: File[]) => Promise<void>;
   isEditing: boolean;
 }
 
@@ -22,6 +23,13 @@ interface DraggableImageProps {
   isSelected: boolean;
   onSelect: () => void;
 }
+
+const LoadingOverlay: React.FC<{ message?: string }> = ({ message }) => (
+  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
+    <FaSpinner className="animate-spin text-4xl mb-2" />
+    <span className="text-sm">{message || 'Processing...'}</span>
+  </div>
+);
 
 const DraggableImage: React.FC<DraggableImageProps> = ({ image, index, moveImage, onDelete, isEditing, isSelected, onSelect }) => {
   const [{ isDragging }, drag] = useDrag({
@@ -42,6 +50,8 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ image, index, moveImage
     },
   });
 
+  const [isLoading, setIsLoading] = useState(true);
+
   return (
     <div
       ref={(node) => drag(drop(node))}
@@ -50,10 +60,17 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ image, index, moveImage
       } ${isDragging ? 'opacity-50' : 'opacity-100'} group`}
       onClick={onSelect}
     >
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+          <FaSpinner className="animate-spin text-gray-400" />
+        </div>
+      )}
       <img
         src={image.url}
         alt="Gear thumbnail"
         className="w-full h-full object-cover rounded-lg"
+        onLoad={() => setIsLoading(false)}
+        onError={() => setIsLoading(false)}
       />
       {index === 0 && (
         <div className="absolute top-1 left-1 p-1 bg-yellow-500 text-white rounded-full" title="Main image (shows on gear card)">
@@ -85,29 +102,69 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [localImages, setLocalImages] = useState(gear.images || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const gearService = new GearService();
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+  const [mainImageLoading, setMainImageLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = async (files: FileList) => {
-    if (!files.length || !user?.uid || !gear.id) return;
+  // Sync localImages with gear.images when they change
+  useEffect(() => {
+    setLocalImages(gear.images || []);
+  }, [gear.images]);
+
+  // Update selected image index when images change
+  useEffect(() => {
+    if (selectedImage >= localImages.length) {
+      setSelectedImage(Math.max(0, localImages.length - 1));
+    }
+  }, [localImages, selectedImage]);
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || !user?.uid || !gear.id) return;
+
+    console.log('Starting image upload process:', {
+      numberOfFiles: files.length,
+      gearId: gear.id,
+      currentImages: localImages.length
+    });
+
+    setIsUploading(true);
 
     try {
-      // Create an array of upload promises
-      const uploadPromises = Array.from(files).map(file => onImageUpload(file));
-      
-      // Wait for all uploads to complete
-      await Promise.all(uploadPromises);
-      
-      setError(null);
-      
-      // If this is the first image being added, select it
-      if (!gear.images || gear.images.length === 0) {
-        setSelectedImage(0);
+      // Initialize progress for all files
+      const progressObj = {};
+      Array.from(files).forEach(file => {
+        progressObj[file.name] = 0;
+      });
+      setUploadProgress(progressObj);
+
+      await onImageUpload(Array.from(files));
+
+      // Update progress to complete for all files
+      const completedProgress = {};
+      Array.from(files).forEach(file => {
+        completedProgress[file.name] = 100;
+      });
+      setUploadProgress(completedProgress);
+
+      console.log('Image upload completed successfully:', {
+        totalUploaded: files.length,
+        newTotalImages: localImages.length + files.length
+      });
+    } catch (error) {
+      console.error('Failed to upload images:', error);
+      setError('Failed to upload images');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress({});
+      if (event.target) {
+        event.target.value = ''; // Reset input
       }
-    } catch (err) {
-      console.error('Error uploading images:', err);
-      setError('Failed to upload images. Please try again.');
     }
   };
 
@@ -125,65 +182,109 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({
     e.preventDefault();
     setIsDraggingOver(false);
     
-    if (!user?.uid || !gear.id) return;
+    if (!user?.uid || !gear.id || isProcessing) return;
 
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      await handleFileChange(files);
+      await handleFileChange({ target: { files } } as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
   const handleDeleteImage = async (path: string) => {
-    if (!user?.uid || !gear.id) return;
+    if (!user?.uid || !gear.id || isProcessing) return;
     
+    setIsProcessing(true);
     try {
+      // Update local state first
+      const updatedImages = localImages.filter(img => img.path !== path);
+      
+      // If we're deleting the selected image, update selection
+      if (selectedImage >= updatedImages.length) {
+        setSelectedImage(Math.max(0, updatedImages.length - 1));
+      }
+
+      // Update local state before the API call
+      setLocalImages(updatedImages);
+
       await gearService.deleteImage(user.uid, gear.id, path);
-      const updatedImages = gear.images?.filter(img => img.path !== path) || [];
-      onUpdate({ ...gear, images: updatedImages });
+      
+      // Only update parent if the API call was successful
+      if (onUpdate) {
+        onUpdate({ ...gear, images: updatedImages });
+      }
+      
       setError(null);
     } catch (err) {
       console.error('Error deleting image:', err);
       setError('Failed to delete image. Please try again.');
+      // Revert local state on error
+      setLocalImages(gear.images || []);
+      // Reset selected image if needed
+      if (selectedImage >= (gear.images || []).length) {
+        setSelectedImage(Math.max(0, (gear.images || []).length - 1));
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const moveImage = useCallback(
-    async (dragIndex: number, hoverIndex: number) => {
-      if (!user?.uid || !gear.id || !gear.images) return;
-
-      const dragImage = gear.images[dragIndex];
-      const newImages = [...gear.images];
-      newImages.splice(dragIndex, 1);
-      newImages.splice(hoverIndex, 0, dragImage);
+  // Debounce the actual reorder update to Firestore
+  const debouncedReorder = useCallback(
+    debounce(async (newImages: typeof localImages) => {
+      if (!user?.uid || !gear.id) return;
 
       try {
-        // Update the gear with the new image order
         await gearService.reorderImages(user.uid, gear.id, newImages);
         onUpdate({ ...gear, images: newImages });
-        
-        // Update the selected image index if needed
-        if (selectedImage === dragIndex) {
-          setSelectedImage(hoverIndex);
-        } else if (selectedImage === hoverIndex) {
-          setSelectedImage(dragIndex);
-        }
-        
         setError(null);
       } catch (err) {
         console.error('Error reordering images:', err);
         setError('Failed to reorder images. Please try again.');
+        // Revert local state on error
+        setLocalImages(gear.images || []);
       }
+    }, 500),
+    [user?.uid, gear.id, onUpdate]
+  );
+
+  const moveImage = useCallback(
+    (dragIndex: number, hoverIndex: number) => {
+      if (dragIndex === hoverIndex || isProcessing) return;
+
+      console.log('Starting image reorder:', {
+        dragIndex,
+        hoverIndex,
+        totalImages: localImages.length
+      });
+
+      const dragImage = localImages[dragIndex];
+      const newImages = [...localImages];
+      newImages.splice(dragIndex, 1);
+      newImages.splice(hoverIndex, 0, dragImage);
+
+      // Update local state immediately
+      setLocalImages(newImages);
+      
+      // Update selected image index if needed
+      if (selectedImage === dragIndex) {
+        setSelectedImage(hoverIndex);
+      } else if (selectedImage === hoverIndex) {
+        setSelectedImage(dragIndex);
+      }
+
+      // Debounce the actual update to Firestore
+      debouncedReorder(newImages);
     },
-    [gear, user?.uid, onUpdate, selectedImage]
+    [localImages, selectedImage, isProcessing, debouncedReorder]
   );
 
   const navigateImage = (direction: 'prev' | 'next') => {
-    if (!gear.images?.length) return;
+    if (!localImages?.length) return;
     
     if (direction === 'prev') {
-      setSelectedImage(prev => (prev > 0 ? prev - 1 : gear.images.length - 1));
+      setSelectedImage(prev => (prev > 0 ? prev - 1 : localImages.length - 1));
     } else {
-      setSelectedImage(prev => (prev < gear.images.length - 1 ? prev + 1 : 0));
+      setSelectedImage(prev => (prev < localImages.length - 1 ? prev + 1 : 0));
     }
   };
 
@@ -191,6 +292,11 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900">Images</h2>
+        {(isProcessing || isUploading) && (
+          <span className="text-sm text-gray-500">
+            {isUploading ? 'Uploading...' : 'Processing...'}
+          </span>
+        )}
       </div>
       
       {error && (
@@ -209,72 +315,97 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              {gear.images && gear.images.length > 0 ? (
+              {localImages && localImages.length > 0 ? (
                 <>
+                  {mainImageLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                      <FaSpinner className="animate-spin text-4xl text-gray-400" />
+                    </div>
+                  )}
                   <img
-                    src={gear.images[selectedImage].url}
+                    src={localImages[selectedImage]?.url}
                     alt="Gear"
                     className="w-full h-full object-contain"
+                    onLoad={() => setMainImageLoading(false)}
+                    onError={() => setMainImageLoading(false)}
                   />
-                  {/* Navigation Arrows - Always visible but semi-transparent */}
-                  <div className="absolute inset-y-0 left-0 flex items-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateImage('prev');
-                      }}
-                      className="p-2 bg-black/30 text-white hover:bg-black/50 transition-colors ml-2 rounded-full"
-                    >
-                      <FaChevronLeft size={24} />
-                    </button>
-                  </div>
-                  <div className="absolute inset-y-0 right-0 flex items-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateImage('next');
-                      }}
-                      className="p-2 bg-black/30 text-white hover:bg-black/50 transition-colors mr-2 rounded-full"
-                    >
-                      <FaChevronRight size={24} />
-                    </button>
-                  </div>
-                  {/* Add More Images Button */}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-4 right-4 p-3 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors group"
-                    title="Add more images"
-                  >
-                    <FaCloudUploadAlt size={24} className="transform group-hover:scale-110 transition-transform" />
-                  </button>
+                  {isProcessing && <LoadingOverlay />}
+                  {/* Navigation Arrows */}
+                  {localImages.length > 1 && !isProcessing && (
+                    <>
+                      <div className="absolute inset-y-0 left-0 flex items-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateImage('prev');
+                          }}
+                          className="p-2 bg-black/30 text-white hover:bg-black/50 transition-colors ml-2 rounded-full"
+                          disabled={isProcessing}
+                        >
+                          <FaChevronLeft size={24} />
+                        </button>
+                      </div>
+                      <div className="absolute inset-y-0 right-0 flex items-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateImage('next');
+                          }}
+                          className="p-2 bg-black/30 text-white hover:bg-black/50 transition-colors mr-2 rounded-full"
+                          disabled={isProcessing}
+                        >
+                          <FaChevronRight size={24} />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
                 <div 
                   className="w-full h-full flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:text-gray-500 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => !isProcessing && fileInputRef.current?.click()}
                 >
-                  <FaCloudUploadAlt size={48} className="mb-2" />
-                  <p className="text-sm">Drag & drop images here or click to browse</p>
+                  {isProcessing ? (
+                    <LoadingOverlay />
+                  ) : (
+                    <>
+                      <FaCloudUploadAlt size={48} className="mb-2" />
+                      <p className="text-sm">Drag & drop images here or click to browse</p>
+                    </>
+                  )}
                 </div>
+              )}
+              
+              {/* Add More Images Button - show only when there are existing images and not processing */}
+              {localImages?.length > 0 && !isProcessing && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-4 right-4 p-3 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors group"
+                  title="Add more images"
+                >
+                  <FaCloudUploadAlt size={24} className="transform group-hover:scale-110 transition-transform" />
+                </button>
               )}
             </div>
           </div>
 
-          {/* Thumbnails */}
-          <div className="grid grid-cols-4 gap-2">
-            {gear.images?.map((image, index) => (
-              <DraggableImage
-                key={image.path}
-                image={image}
-                index={index}
-                moveImage={moveImage}
-                onDelete={handleDeleteImage}
-                isEditing={isEditing}
-                isSelected={selectedImage === index}
-                onSelect={() => setSelectedImage(index)}
-              />
-            ))}
-          </div>
+          {/* Thumbnails - only show if there are images */}
+          {localImages?.length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {localImages.map((image, index) => (
+                <DraggableImage
+                  key={image.path}
+                  image={image}
+                  index={index}
+                  moveImage={moveImage}
+                  onDelete={handleDeleteImage}
+                  isEditing={isEditing && !isProcessing}
+                  isSelected={selectedImage === index}
+                  onSelect={() => setSelectedImage(index)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </DndProvider>
 
@@ -284,8 +415,9 @@ export const GearImageGallery: React.FC<GearImageGalleryProps> = ({
         type="file"
         accept="image/*"
         multiple
-        onChange={(e) => e.target.files && handleFileChange(e.target.files)}
+        onChange={(e) => e.target.files && handleFileChange(e)}
         className="hidden"
+        disabled={isProcessing}
       />
     </div>
   );

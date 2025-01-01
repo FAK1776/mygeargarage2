@@ -4,7 +4,7 @@ import { geminiService } from '../../../services/geminiService';
 
 interface GearHistoryChatProps {
   gear: BaseGear;
-  onUpdate: (updates: Partial<BaseGear>) => void;
+  onUpdate: (updates: Partial<BaseGear>, shouldSave: boolean) => void;
 }
 
 interface ParsedHistoryRecord {
@@ -29,7 +29,9 @@ export const GearHistoryChat: React.FC<GearHistoryChatProps> = ({ gear, onUpdate
     setError(null);
 
     try {
+      console.log('Submitting new service history record:', input);
       const parsedRecord = await geminiService.parseGearHistory(input, gear) as ParsedHistoryRecord;
+      console.log('Parsed service history record:', parsedRecord);
       
       if (!parsedRecord || !parsedRecord.date || !parsedRecord.description) {
         throw new Error('Failed to parse history record properly');
@@ -45,12 +47,18 @@ export const GearHistoryChat: React.FC<GearHistoryChatProps> = ({ gear, onUpdate
         notes: parsedRecord.notes || '',
         tags: parsedRecord.tags || ['service'] // Default to service tag if none provided
       };
+      console.log('Created new history record:', newRecord);
 
       // Ensure we have a valid array of history records
       const currentHistory = Array.isArray(gear.serviceHistory) ? gear.serviceHistory : [];
+      console.log('Current service history:', currentHistory);
       
       // Update the history with the new record
-      onUpdate({ ...gear, serviceHistory: [newRecord, ...currentHistory] });
+      const updatedHistory = [newRecord, ...currentHistory];
+      console.log('Updated service history:', updatedHistory);
+      
+      // Pass shouldSave=true to ensure the update is persisted to Firestore
+      onUpdate({ ...gear, serviceHistory: updatedHistory }, true);
       setInput('');
     } catch (err) {
       console.error('Error processing history:', err);

@@ -215,7 +215,7 @@ export const MyGear = () => {
           gear={selectedGear}
           onClose={() => setSelectedGear(null)}
           onUpdate={handleGearUpdate}
-          isEditing={false}
+          isOpen={true}
         />
       )}
 

@@ -105,10 +105,10 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onS
 
       <div className="p-4">
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
-          {gear.make} {gear.model}
+          {gear.specs?.overview?.manufacturer} {gear.specs?.overview?.model}
         </h3>
         <p className="text-sm sm:text-base text-gray-600">
-          {gear.type}
+          {gear.specs?.overview?.bodySizeShape || 'Body shape not specified'}
         </p>
       </div>
     </div>

@@ -235,6 +235,15 @@ export interface BaseGear {
   createdAt: Date;
   updatedAt: Date;
   serviceHistory?: HistoryRecord[];
+  make: string;
+  model: string;
+  dateAcquired?: Date;
+  dateSold?: Date;
+  acquisitionNotes?: string;
+  pricePaid?: number;
+  saleNotes?: string;
+  priceSold?: number;
+  soldTo?: string;
 }
 
 // GearFormData now includes all fields except id, userId, createdAt, and updatedAt

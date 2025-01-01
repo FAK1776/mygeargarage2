@@ -68,7 +68,18 @@ export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({
       {specs.overview && (
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Overview</h2>
-          {renderSpecificationSection('Basic Information', 'overview', specs.overview)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(specs.overview).map(([field, value]) => (
+              <FormField
+                key={`overview-${field}`}
+                label={field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                value={value?.toString() || ''}
+                isEditing={isEditing}
+                onChange={(newValue) => handleSpecUpdate('overview', null, field, newValue)}
+                type={typeof value === 'boolean' ? 'checkbox' : 'text'}
+              />
+            ))}
+          </div>
         </div>
       )}
 
