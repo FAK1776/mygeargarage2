@@ -5,7 +5,7 @@
   },
   "hosting": [
     {
-      "target": "my-gear-garage",
+      "target": "production",
       "public": "dist",
       "ignore": [
         "firebase.json",
@@ -20,7 +20,7 @@
       ]
     },
     {
-      "target": "staging-my-gear-garage",
+      "target": "staging",
       "public": "dist",
       "ignore": [
         "firebase.json",
