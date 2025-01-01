@@ -1,21 +1,26 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [react()],
-  build: {
-    sourcemap: mode === 'staging',
-    outDir: 'dist',
-  },
-  define: {
-    // Ensure environment variables are properly replaced during build
-    'process.env.NODE_ENV': JSON.stringify(mode),
-    ...Object.keys(process.env).reduce((env, key) => {
-      if (key.startsWith('VITE_')) {
-        env[`import.meta.env.${key}`] = JSON.stringify(process.env[key])
-      }
-      return env
-    }, {})
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
+  
+  return {
+    plugins: [react()],
+    build: {
+      sourcemap: mode === 'staging',
+      outDir: 'dist',
+    },
+    define: {
+      // Expose env variables
+      'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
+      'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
+      'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
+      'import.meta.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(env.VITE_FIREBASE_STORAGE_BUCKET),
+      'import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+      'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID)
+    }
   }
-}));
+});
