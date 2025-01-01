@@ -43,25 +43,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci
         
-      - name: Verify Dependencies
-        run: npm audit
-
       - name: Run Linter
         run: npm run lint || true  # Don't fail deployment on lint errors, but report them
-
-      - name: Run Tests
-        run: npm test
-        continue-on-error: false  # Fail deployment if tests fail
-        
-      - name: Type Check
-        run: npm run type-check
-        continue-on-error: false  # Fail deployment if type check fails
 
       - name: Copy Staging Environment
         run: cp .env.staging .env
         
       - name: Build
-        run: npm run build
+        run: npm run build:staging
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}

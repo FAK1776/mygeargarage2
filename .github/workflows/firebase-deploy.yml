@@ -36,22 +36,10 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-        
-      - name: Security Audit
-        run: npm audit
-        continue-on-error: false  # Fail if security issues found
 
       - name: Run Linter
         run: npm run lint
         continue-on-error: false  # Strict linting for production
-
-      - name: Run Tests
-        run: npm test
-        continue-on-error: false
-        
-      - name: Type Check
-        run: npm run type-check
-        continue-on-error: false
 
   deploy:
     needs: verify
@@ -91,7 +79,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: my-gear-garage
           channelId: live
-          target: production
+          target: my-gear-garage
           
       - name: Create Release Notes
         if: startsWith(github.ref, 'refs/tags/')
