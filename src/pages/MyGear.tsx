@@ -62,9 +62,12 @@ export const MyGear = () => {
     setSelectedGear(gear);
   };
 
-  const handleGearUpdate = async (updatedGear: BaseGear) => {
+  const handleGearUpdate = async (updatedGear: BaseGear, shouldSave: boolean = false) => {
+    if (!user) return;
     try {
-      await gearService.updateGear(updatedGear);
+      if (shouldSave) {
+        await gearService.updateGear(user.uid, updatedGear.id, updatedGear);
+      }
       setGear(prev => prev.map(g => g.id === updatedGear.id ? updatedGear : g));
       setSelectedGear(updatedGear);
     } catch (error) {
@@ -212,6 +215,7 @@ export const MyGear = () => {
           gear={selectedGear}
           onClose={() => setSelectedGear(null)}
           onUpdate={handleGearUpdate}
+          isEditing={false}
         />
       )}
 

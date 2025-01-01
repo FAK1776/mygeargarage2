@@ -251,7 +251,11 @@ Return ONLY a JSON object (no markdown formatting, no code blocks) with this str
   "description": "detailed description of what was done",
   "provider": "service provider or person who did the work",
   "cost": number,
-  "tags": ["array of applicable tags: service, modification, ownership"],
+  "tags": ["array of applicable tags: ownership, modification, maintenance, repairs. IMPORTANT RULES FOR TAGS:
+    - Use 'ownership' for acquisitions, sales, and transfers
+    - Use 'modification' for upgrades and customizations
+    - Use 'maintenance' for routine care and expected upkeep
+    - Use 'repairs' for unexpected fixes or damage recovery"],
   "notes": "additional notes or context"
 }
 
@@ -269,9 +273,10 @@ Guidelines for parsing:
    - Include leading zeros for single-digit months and days
    - Use noon (12:00) for all times to avoid timezone issues
 2. For tags:
-   - Use 'service' for maintenance, repairs, setups, adjustments
-   - Use 'modification' for permanent changes, upgrades, replacements
-   - Use 'ownership' for buying, selling, trading
+   - Use 'ownership' for acquisitions, sales, and transfers
+   - Use 'modification' for upgrades and customizations
+   - Use 'maintenance' for routine care and expected upkeep
+   - Use 'repairs' for unexpected fixes or damage recovery
 3. For costs:
    - Extract any mentioned prices
    - Include only the numeric value

@@ -1,214 +1,292 @@
-import React, { useRef, useState } from 'react';
-import { FaTrash, FaUpload, FaInfoCircle, FaImage } from 'react-icons/fa';
+import React, { useCallback, useState, useRef } from 'react';
 import { BaseGear } from '../../../types/gear';
+import { FaTrash, FaGuitar, FaCloudUploadAlt, FaChevronLeft, FaChevronRight, FaStar, FaPlus } from 'react-icons/fa';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { GearService } from '../../../services/gearService';
 import { useAuth } from '../../../hooks/useAuth';
 
 interface GearImageGalleryProps {
   gear: BaseGear;
-  onUpdate: (gear: BaseGear) => void;
-  onImageUpload?: (file: File) => Promise<void>;
-  isEditing?: boolean;
+  onUpdate: (updates: Partial<BaseGear>) => void;
+  onImageUpload: (file: File) => Promise<void>;
+  isEditing: boolean;
 }
 
-export const GearImageGallery: React.FC<GearImageGalleryProps> = ({ 
-  gear, 
+interface DraggableImageProps {
+  image: { url: string; path: string; timestamp: number };
+  index: number;
+  moveImage: (dragIndex: number, hoverIndex: number) => void;
+  onDelete: (path: string) => void;
+  isEditing: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+const DraggableImage: React.FC<DraggableImageProps> = ({ image, index, moveImage, onDelete, isEditing, isSelected, onSelect }) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: 'IMAGE',
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [, drop] = useDrop({
+    accept: 'IMAGE',
+    hover: (item: { index: number }) => {
+      if (item.index !== index) {
+        moveImage(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return (
+    <div
+      ref={(node) => drag(drop(node))}
+      className={`relative aspect-square cursor-pointer ${
+        isSelected ? 'ring-2 ring-[#EE5430]' : ''
+      } ${isDragging ? 'opacity-50' : 'opacity-100'} group`}
+      onClick={onSelect}
+    >
+      <img
+        src={image.url}
+        alt="Gear thumbnail"
+        className="w-full h-full object-cover rounded-lg"
+      />
+      {index === 0 && (
+        <div className="absolute top-1 left-1 p-1 bg-yellow-500 text-white rounded-full" title="Main image (shows on gear card)">
+          <FaStar size={10} />
+        </div>
+      )}
+      {isEditing && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(image.path);
+          }}
+          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Delete image"
+        >
+          <FaTrash size={10} />
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const GearImageGallery: React.FC<GearImageGalleryProps> = ({
+  gear,
   onUpdate,
   onImageUpload,
-  isEditing = false
+  isEditing,
 }) => {
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<number>(0);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const gearService = new GearService();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (files: FileList) => {
+    if (!files.length || !user?.uid || !gear.id) return;
+
+    try {
+      // Create an array of upload promises
+      const uploadPromises = Array.from(files).map(file => onImageUpload(file));
+      
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+      
+      setError(null);
+      
+      // If this is the first image being added, select it
+      if (!gear.images || gear.images.length === 0) {
+        setSelectedImage(0);
+      }
+    } catch (err) {
+      console.error('Error uploading images:', err);
+      setError('Failed to upload images. Please try again.');
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
+    setIsDraggingOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+    setIsDraggingOver(false);
   };
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    // Handle new image file uploads
-    if (e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
-      try {
-        for (const file of files) {
-          if (!file.type.startsWith('image/')) continue;
-          if (onImageUpload) {
-            await onImageUpload(file);
-          }
-        }
-      } catch (error) {
-        console.error('Error uploading images:', error);
-      }
-      return;
-    }
-  };
-
-  const handleThumbnailDragStart = (e: React.DragEvent, index: number) => {
-    e.stopPropagation();
-    setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleThumbnailDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleThumbnailDrop = async (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null);
-      return;
-    }
-
-    try {
-      const updatedGear = await gearService.reorderImages(user!.uid, gear.id, draggedIndex, dropIndex);
-      onUpdate(updatedGear);
-      setCurrentImageIndex(dropIndex);
-    } catch (error) {
-      console.error('Error reordering images:', error);
-    }
-    setDraggedIndex(null);
-  };
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    try {
-      for (const file of files) {
-        if (!file.type.startsWith('image/')) continue;
-        if (onImageUpload) {
-          await onImageUpload(file);
-        }
-      }
-    } catch (error) {
-      console.error('Error uploading images:', error);
-    }
+    setIsDraggingOver(false);
     
-    // Clear the input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (!user?.uid || !gear.id) return;
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await handleFileChange(files);
     }
   };
 
-  const handleDeleteImage = async (index: number) => {
-    if (!gear.images || gear.images.length === 0) return;
-
+  const handleDeleteImage = async (path: string) => {
+    if (!user?.uid || !gear.id) return;
+    
     try {
-      const updatedGear = await gearService.deleteImage(user!.uid, gear.id, index);
-      onUpdate(updatedGear);
-      if (currentImageIndex >= updatedGear.images.length) {
-        setCurrentImageIndex(Math.max(0, updatedGear.images.length - 1));
+      await gearService.deleteImage(user.uid, gear.id, path);
+      const updatedImages = gear.images?.filter(img => img.path !== path) || [];
+      onUpdate({ ...gear, images: updatedImages });
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      setError('Failed to delete image. Please try again.');
+    }
+  };
+
+  const moveImage = useCallback(
+    async (dragIndex: number, hoverIndex: number) => {
+      if (!user?.uid || !gear.id || !gear.images) return;
+
+      const dragImage = gear.images[dragIndex];
+      const newImages = [...gear.images];
+      newImages.splice(dragIndex, 1);
+      newImages.splice(hoverIndex, 0, dragImage);
+
+      try {
+        // Update the gear with the new image order
+        await gearService.reorderImages(user.uid, gear.id, newImages);
+        onUpdate({ ...gear, images: newImages });
+        
+        // Update the selected image index if needed
+        if (selectedImage === dragIndex) {
+          setSelectedImage(hoverIndex);
+        } else if (selectedImage === hoverIndex) {
+          setSelectedImage(dragIndex);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error reordering images:', err);
+        setError('Failed to reorder images. Please try again.');
       }
-    } catch (error) {
-      console.error('Error deleting image:', error);
+    },
+    [gear, user?.uid, onUpdate, selectedImage]
+  );
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (!gear.images?.length) return;
+    
+    if (direction === 'prev') {
+      setSelectedImage(prev => (prev > 0 ? prev - 1 : gear.images.length - 1));
+    } else {
+      setSelectedImage(prev => (prev < gear.images.length - 1 ? prev + 1 : 0));
     }
   };
 
   return (
-    <div 
-      className={`space-y-4 ${isDragging ? 'border-2 border-dashed border-[#EE5430] rounded-lg p-4' : 'border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#EE5430] transition-colors'}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {/* Main Image */}
-      <div className="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden relative">
-        {gear.images && gear.images.length > 0 ? (
-          <img
-            src={gear.images[currentImageIndex]}
-            alt={`${gear.make} ${gear.model}`}
-            className="object-contain w-full h-full"
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full">
-            <FaImage className="w-12 h-12 text-gray-400 mb-2" />
-            <span className="text-gray-400 text-center">
-              Drop images here or click upload below
-            </span>
-          </div>
-        )}
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-900">Images</h2>
       </div>
+      
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
 
-      {/* Upload Button */}
-      <div className="flex justify-center">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileSelect}
-          className="hidden"
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2 text-gray-600 hover:text-gray-900 transition-colors rounded-full hover:bg-gray-100"
-          title="Upload images"
-        >
-          <FaUpload className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Thumbnails */}
-      {gear.images && gear.images.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {gear.images.map((image, index) => (
-            <div
-              key={image}
-              className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                index === currentImageIndex ? 'border-[#EE5430]' : 'border-transparent hover:border-[#EE5430]/50'
+      <DndProvider backend={HTML5Backend}>
+        <div className="space-y-4">
+          {/* Main Image with Navigation */}
+          <div className="relative">
+            <div 
+              className={`relative aspect-square w-full bg-gray-100 rounded-lg overflow-hidden ${
+                isDraggingOver ? 'border-2 border-dashed border-[#EE5430] bg-[#EE5430]/10' : ''
               }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
             >
-              <img
-                src={image}
-                alt={`${gear.make} ${gear.model} thumbnail ${index + 1}`}
-                className="w-full h-full object-cover cursor-pointer"
-                onClick={() => setCurrentImageIndex(index)}
-                draggable={true}
-                onDragStart={(e) => handleThumbnailDragStart(e, index)}
-                onDragOver={(e) => handleThumbnailDragOver(e, index)}
-                onDrop={(e) => handleThumbnailDrop(e, index)}
-              />
-              <button
-                onClick={() => handleDeleteImage(index)}
-                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-              >
-                <FaTrash size={12} />
-              </button>
-              {index === 0 && (
-                <div className="absolute top-1 left-1 bg-[#EE5430] text-white text-xs px-1.5 py-0.5 rounded">
-                  Main
+              {gear.images && gear.images.length > 0 ? (
+                <>
+                  <img
+                    src={gear.images[selectedImage].url}
+                    alt="Gear"
+                    className="w-full h-full object-contain"
+                  />
+                  {/* Navigation Arrows - Always visible but semi-transparent */}
+                  <div className="absolute inset-y-0 left-0 flex items-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateImage('prev');
+                      }}
+                      className="p-2 bg-black/30 text-white hover:bg-black/50 transition-colors ml-2 rounded-full"
+                    >
+                      <FaChevronLeft size={24} />
+                    </button>
+                  </div>
+                  <div className="absolute inset-y-0 right-0 flex items-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateImage('next');
+                      }}
+                      className="p-2 bg-black/30 text-white hover:bg-black/50 transition-colors mr-2 rounded-full"
+                    >
+                      <FaChevronRight size={24} />
+                    </button>
+                  </div>
+                  {/* Add More Images Button */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-4 right-4 p-3 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors group"
+                    title="Add more images"
+                  >
+                    <FaCloudUploadAlt size={24} className="transform group-hover:scale-110 transition-transform" />
+                  </button>
+                </>
+              ) : (
+                <div 
+                  className="w-full h-full flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:text-gray-500 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <FaCloudUploadAlt size={48} className="mb-2" />
+                  <p className="text-sm">Drag & drop images here or click to browse</p>
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
 
-      {/* Help Text */}
-      <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-        <FaInfoCircle className="text-[#EE5430] flex-shrink-0" />
-        <span>Drag and drop images here or click upload. Drag thumbnails to reorder. First image will be the main image shown on cards.</span>
-      </div>
+          {/* Thumbnails */}
+          <div className="grid grid-cols-4 gap-2">
+            {gear.images?.map((image, index) => (
+              <DraggableImage
+                key={image.path}
+                image={image}
+                index={index}
+                moveImage={moveImage}
+                onDelete={handleDeleteImage}
+                isEditing={isEditing}
+                isSelected={selectedImage === index}
+                onSelect={() => setSelectedImage(index)}
+              />
+            ))}
+          </div>
+        </div>
+      </DndProvider>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => e.target.files && handleFileChange(e.target.files)}
+        className="hidden"
+      />
     </div>
   );
 }; 

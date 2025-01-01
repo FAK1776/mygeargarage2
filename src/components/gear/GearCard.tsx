@@ -61,7 +61,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onClick, onDelete, onS
       <div className="relative h-48 sm:h-56 md:h-64 bg-gray-200">
         {gear.images && gear.images.length > 0 ? (
           <img
-            src={gear.images[0]}
+            src={gear.images[0].url}
             alt={`${gear.make} ${gear.model}`}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             style={{ imageRendering: 'crisp-edges' }}

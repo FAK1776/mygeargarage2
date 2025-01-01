@@ -1,0 +1,101 @@
+Category Order,Category,Sub Category,Category Spec Order,Specification,Example 1,Example 2,Example 3,Example 4,Example 5
+1,Overview,,1,Manufacturer,Martin Guitar,Martin Guitar,Riceknbacker,Fender,Gretsch
+1,Overview,,2,Model,CEO-7,D-28,4003S,American Ultra Telecaster,Falcon™ Hollow Body with String-Thru Bigsby®
+1,Overview,,3,Body Size / Shape,00-14 Fret Slope Shoulder,S-13 Fret Cutaway,,Telecaster,Falcon™
+1,Overview,,4,Series,CEO Series,Standard Series,Boutique,American Ultra,Professional Collection
+1,Overview,,5,Build / Type,,,Solid,Solid,Hollow Body
+1,Overview,,6,Top Material,Adirondack Spruce,Spruce,,,Arched Laminated Maple
+1,Overview,,7,Body (Back & Sides) Material,Mahogany,Koa Fine Veneer,Maple,Alder,Laminated Maple
+1,Overview,,8,Scale Length,"24.9""","25.4""",33 1/4″,25.5”,25.5”
+1,Overview,,9,Nut Width,1 3/4'',1 3/4'',1 11/16”,1.685”,"1.6875"""
+1,Overview,,10,Neck Shape / Profile,Modified V,Low Profile Velocity,,"Modern ""D""","Standard ""U"""
+1,Overview,,11,Neck Type / Construction,Dovetail Neck Joint,Sure Align® Linear Dovetail Neck Joint,Thru body,4-Bolt Standard,Set-Neck
+1,Overview,,12,Pickup Configuration,,,2 pickups,SS,Filter'Tron™ / Filter'Tron™
+1,Overview,,14,Country of Origin,USA,USA,,,
+1,Overview,,15,Serial Number,,,,,
+2,Top,,1,Top Color,Autumn Sunset Burst,,,,
+2,Top,,2,Finish Top,Gloss,Gloss,,,
+2,Top,,3,Binding,Antique White,White,,,
+2,Top,,4,Top Inlay Material,Black Stripe,Blue with Multi-Stripe,,,
+2,Top,,5,Top Detail,,,,,
+2,Top,,8,Bridge Style,Straight Line - Drop in Saddle,Sloped Modern Belly - Drop in Saddle,,,
+2,Top,,9,Rosette,Multi-Stripe,Aperture Design with Multi-Stripe,,,
+2,Top,,10,Bridge String Spacing,2 5/16'',2 5/32'',,,
+2,Top,,11,Bridge Material,Ebony,Ebony,,,
+2,Top,,12,Bridge Pin Material,White Plastic,White Plastic,,,
+2,Top,,13,Bridge Pin Dots,Black Plastic,Black Plastic,,,
+2,Top,,14,Saddle,Compensated Bone,Compensated White Tusq,,,
+2,Top,,15,Saddle Radius,"16""","16""",,,
+3,Body,Design,1,Body (Back & Sides) Color,Dark Mahogany,,,,
+3,Body,Design,2,Body (Back & Sides) Finish,Gloss,Gloss,,Gloss Urethane,Gloss
+3,Body,Design,3,Body Binding,,,,White,Gold Sparkle with W/B/W/B Purfling
+3,Body,Design,4,Back Purfling/Strip,,,,,
+3,Body,Design,5,Back Inlay Material,Black Stripe,,,,
+3,Body,Design,6,Back Detail,,,,,
+3,Body,Design,7,Side Detail,,,,,
+3,Body,Design,8,Side Inlay Material,,,,,
+3,Body,Design,9,Endpiece,,,,,
+3,Body,Design,10,Endpiece Inlay,,,,,
+3,Body,Design,11,Heelcap,Antique White,,,,
+3,Body,Bracing,12,Body Bracing,,,,,Arc-Tone™ Bracing
+3,Body,Bracing,13,Bracing Pattern,X-Brace,Tone Tension X Brace,,,
+3,Body,Bracing,14,Brace Shape,Scalloped,Treble Side Scalloped X with Non-Scalloped Tone Bars,,,
+3,Body,Bracing,15,Brace Material,Adirondack Spruce,Spruce,,,
+3,Body,Bracing,16,Brace Size,"1/4""","5/16"" with 1/4"" Tone Bars",,,
+,Body,Dimensions,17,Body Depth,,,,,
+3,Body,Dimensions,18,Upper Bout Width,,,31.8 mm (1 1/4”),,"2.5"" (63.5 mm)"
+,Body,Dimensions,19,Upper Bout Depth,,,,,
+,Body,Dimensions,20,Lower Bout Width,,,,,
+,Body,Dimensions,21,Lower Bout Depth,,,,,
+4,Neck & Headstock,Neck,1,Neck Taper,Standard Taper,High-Performance Taper,,,
+4,Neck & Headstock,Neck,2,Neck Wood / Material,Select Hardwood,Select Hardwood,Maple & Walnut,Maple,Maple
+4,Neck & Headstock,Neck,3,Neck Color,Dark Mahogany,,,,
+4,Neck & Headstock,Neck,4,Neck Finish,Satin,Satin,,Satin Urethane with Gloss Urethane Headstock Face,Gloss
+4,Neck & Headstock,Neck,5,Neck Binding,,,Yes,,Gold Sparkle with W/B/W Purfling
+4,Neck & Headstock,Neck,6,Number of Frets,20,20,20,22,22
+4,Neck & Headstock,Neck,7,Neck Joins Body At,14th Fret,13th Fret,,,
+4,Neck & Headstock,Neck,8,Side Dots,Yellow,White,,,Luminlay®
+4,Neck & Headstock,Neck,9,Truss Rod Type,,,Double-action,Bi-Flex™,
+4,Neck & Headstock,Neck,10,Nut Material,Bone,White Corian,,Bone,Graph Tech TUSQ XL
+4,Neck & Headstock,Fingerboard,11,Fingerboard Wood / Material,Ebony,Ebony,Rosewood,Rosewood,Ebony
+4,Neck & Headstock,Fingerboard,12,Fingerboard Radius,,,10”,"10"" to 14"" Compound","12"""
+4,Neck & Headstock,Fingerboard,13,Fingerboard Width at 12th Fret,2 1/4'',2 1/8'',,,
+4,Neck & Headstock,Fingerboard,14,Fingerboard Inlay Style,Old Style 18,Celestial Bullseye,,,
+4,Neck & Headstock,Fingerboard,15,Fingerboard Inlay Material,Abalone,Mother of Pearl Pattern and Celestial Blue Dot,,,
+4,Neck & Headstock,Fingerboard,16,Fingerboard Binding Material,,,,,
+4,Neck & Headstock,Fingerboard,17,Rolled Fingerboard Edges,,,,Yes,Yes
+4,Neck & Headstock,Fingerboard,18,Fret Size,,,,Medium Jumbo,Medium Jumbo
+4,Neck & Headstock,Fingerboard,19,Fret Marker Style / Inlays,,,Dot,White Pearloid Dot,Pearloid Neo-Classic™ Thumbnail
+4,Neck & Headstock,Headstock,20,Headstock Shape,Solid with Square Taper,Solid with Square Taper,,,
+4,Neck & Headstock,Headstock,21,Headplate Material,Ebony,Ebony,,,
+4,Neck & Headstock,Headstock,22,Headplate Logo Style,Script Authentic 1933 Overlay,Script Overlay,,,
+4,Neck & Headstock,Headstock,23,Headplate Binding Material,,,,,
+4,Neck & Headstock,Headstock,24,Headplate Detail,,,,,
+5,Electronics,,1,Acoustic Pickup,Fishman MX-T,Fishman MX-T,,,
+5,Electronics,,2,Number of Pickups,,,2,2,2
+5,Electronics,,3,Bridge Pickup,,,Hi-gain,Ultra Noiseless™ Vintage Tele®,PRO-FT™ Filter'Tron™
+5,Electronics,,4,Middle Pickup,,,Hi-gain,Ultra Noiseless™ Vintage Tele®,PRO-FT™ Filter'Tron™
+5,Electronics,,5,Neck Pickup,,,Hi-gain,Ultra Noiseless™ Vintage Tele®,PRO-FT™ Filter'Tron™
+5,Electronics,,6,Pickup Color,,,Gold,Gold,Gold
+5,Electronics,,7,Controls,,,,"Master Volume (S-1™ Switch), Master Tone","Volume 1 (Neck), Volume 2 (Bridge), Master Volume, Master Tone"
+5,Electronics,,8,Pickup Switching,,,,3-Position Blade,3-Position Toggle
+5,Electronics,,9,Output Type,,,Mono,,
+5,Electronics,,10,Special Electronics,,,,S-1™ Switch Activates Series Wiring Option,"Master no-load tone control with ""Squeezebox"" capacitor"
+6,Hardware,,1,Bridge,,,,,Adjusto-Matic
+6,Hardware,,2,Hardware Finish,,,,Nickel/Chrome,Gold
+6,Hardware,,3,Tuning Machines,Golden Age Relic Nickel,Nickel Open Gear,Schaller,Deluxe Cast/Sealed Locking,Grover® Imperial™ Locking
+6,Hardware,,4,Tuning Machine Knobs,Cream Plastic,Butterbean,,,
+6,Hardware,,5,Tailpiece,,,RIC,,Bigsby® B6 String-Thru
+6,Hardware,,6,Pickguard,Tortoise Pattern,Brown Tortoise Pattern,,,1-Ply Anodized Aluminum
+6,Hardware,,7,Pickguard Inlay:,,,,,
+6,Hardware,,8,Control Knobs,,,,Knurled Flat-Top,G-Arrow
+6,Hardware,,9,Switch Tip,,,,Black,Gold
+6,Hardware,,10,Neck Plate,,,,4-Bolt Asymmetrical,
+6,Hardware,,11,Strap Buttons / Locks,,,,,Grover Strap Locks
+7,Miscellaneous,,1,Pleked,TRUE,TRUE,,,
+7,Miscellaneous,,2,Label,Pre-printed CFM IV Signature - Numbered in sequence without total,Paper Label,,,
+7,Miscellaneous,,3,Case,Ply Hardshell,Soft-shell or Soft Gig Bag,,Elite Molded Case,"G6242L Gretsch® 17"" Deluxe Hollow Body Hardshell"
+7,Miscellaneous,,4,Recommended Strings,Authentic Acoustic,Authentic Acoustic,,Fender® USA 250L Nickel Plated Steel (.009-.042),Nickel Plated Steel (.011-.049)
+7,Miscellaneous,,5,Weight,,,9.0 lbs.,,
+7,Miscellaneous,,6,Orientation,Right-Hand,Right-Hand,Right-Hand,Right-Hand,Right-Hand
+7,Miscellaneous,,7,Comments,,,,,

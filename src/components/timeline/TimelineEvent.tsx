@@ -20,14 +20,17 @@ export const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
 
   const getEventDescription = (event) => {
     switch (event.type) {
-      case 'service':
-        return `${event.description} at ${event.provider}`;
+      case 'repairs':
+        return `Repair: ${event.description}${event.provider ? ` at ${event.provider}` : ''}`;
       case 'maintenance':
-        return `${event.description} at ${event.provider}`;
-      case 'purchase':
-        return `Purchased${event.provider ? ` from ${event.provider}` : ''}`;
-      case 'sale':
-        return `Sold${event.provider ? ` to ${event.provider}` : ''}`;
+        return `Maintenance: ${event.description}${event.provider ? ` at ${event.provider}` : ''}`;
+      case 'modification':
+        return `Modification: ${event.description}${event.provider ? ` by ${event.provider}` : ''}`;
+      case 'ownership':
+        if (event.description.toLowerCase().includes('sold')) {
+          return `Sold${event.provider ? ` to ${event.provider}` : ''}`;
+        }
+        return `Acquired${event.provider ? ` from ${event.provider}` : ''}`;
       default:
         return event.description;
     }

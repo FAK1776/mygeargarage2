@@ -1,23 +1,65 @@
-import React, { useState } from 'react';
-import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import React, { useState, useMemo } from 'react';
+import { BaseGear, HistoryRecord } from '../../../types/gear';
 import { GearHistoryChat } from './GearHistoryChat';
-import { FormField } from '../../common/FormField';
-import { HistoryRecord } from '../../../types/gear';
+import { FaEdit, FaTrash, FaSave, FaTimes, FaFilter } from 'react-icons/fa';
 
 interface GearHistoryProps {
-  gear: any;
-  isEditing?: boolean;
-  onUpdate: (updates: any) => void;
+  gear: BaseGear;
+  onUpdate: (updates: Partial<BaseGear>) => void;
+  isEditing: boolean;
 }
 
-export const GearHistory: React.FC<GearHistoryProps> = ({ gear, isEditing, onUpdate }) => {
+type HistoryTag = 'ownership' | 'modification' | 'maintenance' | 'repairs';
+
+const TAG_COLORS: Record<HistoryTag, { bg: string; text: string }> = {
+  ownership: { bg: 'bg-purple-100', text: 'text-purple-800' },
+  modification: { bg: 'bg-blue-100', text: 'text-blue-800' },
+  maintenance: { bg: 'bg-green-100', text: 'text-green-800' },
+  repairs: { bg: 'bg-red-100', text: 'text-red-800' },
+};
+
+export const GearHistory: React.FC<GearHistoryProps> = ({ gear, onUpdate, isEditing }) => {
   const [editingRecord, setEditingRecord] = useState<string | null>(null);
-  const [editedRecord, setEditedRecord] = useState<HistoryRecord | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [editedValues, setEditedValues] = useState<Partial<HistoryRecord>>({});
+  const [selectedTags, setSelectedTags] = useState<HistoryTag[]>([]);
 
-  const availableTags = ['maintenance', 'service', 'ownership'];
+  const handleEditStart = (record: HistoryRecord) => {
+    setEditingRecord(record.id);
+    setEditedValues(record);
+  };
 
-  const toggleTag = (tag: string) => {
+  const handleEditCancel = () => {
+    setEditingRecord(null);
+    setEditedValues({});
+  };
+
+  const handleEditSave = (recordId: string) => {
+    if (!gear.serviceHistory) return;
+
+    const updatedHistory = gear.serviceHistory.map(record => 
+      record.id === recordId ? { ...record, ...editedValues } : record
+    );
+
+    onUpdate({ ...gear, serviceHistory: updatedHistory });
+    setEditingRecord(null);
+    setEditedValues({});
+  };
+
+  const handleDelete = (recordId: string) => {
+    if (!gear.serviceHistory) return;
+
+    const updatedHistory = gear.serviceHistory.filter(record => record.id !== recordId);
+    onUpdate({ ...gear, serviceHistory: updatedHistory });
+  };
+
+  const handleFieldChange = (field: keyof HistoryRecord, value: string | number | string[]) => {
+    setEditedValues(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleTagToggle = (tag: HistoryTag) => {
     setSelectedTags(prev => 
       prev.includes(tag) 
         ? prev.filter(t => t !== tag)
@@ -25,289 +67,196 @@ export const GearHistory: React.FC<GearHistoryProps> = ({ gear, isEditing, onUpd
     );
   };
 
-  const handleEdit = (record: HistoryRecord) => {
-    setEditingRecord(record.id);
-    setEditedRecord({ ...record });
-  };
+  const sortedAndFilteredHistory = useMemo(() => {
+    if (!gear.serviceHistory) return [];
 
-  const handleSaveEdit = () => {
-    if (!editedRecord) return;
-
-    const formattedRecord = {
-      ...editedRecord,
-      date: editedRecord.date ? new Date(editedRecord.date).toISOString() : new Date().toISOString(),
-    };
-
-    const updatedHistory = gear.serviceHistory?.map((record: HistoryRecord) =>
-      record.id === editedRecord.id ? formattedRecord : record
-    ) || [];
-
-    onUpdate({ serviceHistory: updatedHistory });
-    setEditingRecord(null);
-    setEditedRecord(null);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingRecord(null);
-    setEditedRecord(null);
-  };
-
-  const handleDelete = (recordId: string) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
-      const updatedHistory = gear.serviceHistory?.filter((record: HistoryRecord) => record.id !== recordId) || [];
-      onUpdate({ serviceHistory: updatedHistory });
+    let filtered = gear.serviceHistory;
+    
+    // Apply tag filtering
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(record => 
+        record.tags?.some(tag => selectedTags.includes(tag as HistoryTag))
+      );
     }
-  };
 
-  const sortedHistory = [...(gear.serviceHistory || [])]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const filteredHistory = selectedTags.length > 0
-    ? sortedHistory.filter(record => 
-        selectedTags.some(tag => record.tags?.includes(tag))
-      )
-    : sortedHistory;
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
-  };
-
-  const getTagStyle = (tag: string) => {
-    switch (tag) {
-      case 'service':
-        return {
-          active: 'bg-blue-600 text-white',
-          inactive: 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-        };
-      case 'maintenance':
-        return {
-          active: 'bg-purple-600 text-white',
-          inactive: 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-        };
-      case 'ownership':
-        return {
-          active: 'bg-green-600 text-white',
-          inactive: 'bg-green-100 text-green-800 hover:bg-green-200'
-        };
-      default:
-        return {
-          active: 'bg-[#EE5430] text-white',
-          inactive: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        };
-    }
-  };
+    // Sort by date descending
+    return [...filtered].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }, [gear.serviceHistory, selectedTags]);
 
   return (
-    <div className="space-y-4">
-      <div className="bg-gray-50 rounded-lg p-4">
+    <div className="space-y-6">
+      {/* Add New Record */}
+      <div className="mt-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Record</h3>
         <GearHistoryChat gear={gear} onUpdate={onUpdate} />
       </div>
 
+      {/* Tag Filters */}
       <div className="flex flex-wrap gap-2">
-        {availableTags.map(tag => {
-          const style = getTagStyle(tag);
-          return (
-            <button
-              key={tag}
-              onClick={() => toggleTag(tag)}
-              className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                selectedTags.includes(tag)
-                  ? style.active
-                  : style.inactive
+        {Object.entries(TAG_COLORS).map(([tag, colors]) => (
+          <button
+            key={tag}
+            onClick={() => handleTagToggle(tag as HistoryTag)}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
+              ${selectedTags.includes(tag as HistoryTag)
+                ? `${colors.bg} ${colors.text}`
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
-            >
-              {tag.charAt(0).toUpperCase() + tag.slice(1)}
-            </button>
-          );
-        })}
+          >
+            {tag.charAt(0).toUpperCase() + tag.slice(1)}
+          </button>
+        ))}
       </div>
-      
-      {filteredHistory.length > 0 && (
-        <div className="space-y-2">
-          {filteredHistory.map((record: HistoryRecord) => (
-            <div
-              key={record.id}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:border-[#EE5430]/20 transition-colors"
-            >
-              {editingRecord === record.id ? (
+
+      {/* Service History Records */}
+      <div className="space-y-4">
+        {sortedAndFilteredHistory.map(record => (
+          <div key={record.id} className="bg-white rounded-lg border p-4 space-y-2">
+            {editingRecord === record.id ? (
+              <>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-medium text-gray-900">Edit Record</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <input
+                      type="date"
+                      value={new Date(editedValues.date || record.date).toISOString().split('T')[0]}
+                      onChange={e => handleFieldChange('date', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#EE5430] focus:ring-[#EE5430] sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      value={editedValues.description || record.description}
+                      onChange={e => handleFieldChange('description', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#EE5430] focus:ring-[#EE5430] sm:text-sm"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Provider</label>
+                    <input
+                      type="text"
+                      value={editedValues.provider || record.provider}
+                      onChange={e => handleFieldChange('provider', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#EE5430] focus:ring-[#EE5430] sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Cost</label>
+                    <input
+                      type="number"
+                      value={editedValues.cost || record.cost}
+                      onChange={e => handleFieldChange('cost', parseFloat(e.target.value))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#EE5430] focus:ring-[#EE5430] sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Tags</label>
+                    <div className="mt-2 flex gap-2">
+                      {Object.entries(TAG_COLORS).map(([tag, colors]) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            const currentTags = editedValues.tags || record.tags || [];
+                            const newTags = currentTags.includes(tag)
+                              ? currentTags.filter(t => t !== tag)
+                              : [...currentTags, tag];
+                            handleFieldChange('tags', newTags);
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
+                            ${(editedValues.tags || record.tags || []).includes(tag)
+                              ? `${colors.bg} ${colors.text}`
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                          {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Notes</label>
+                    <textarea
+                      value={editedValues.notes || record.notes}
+                      onChange={e => handleFieldChange('notes', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#EE5430] focus:ring-[#EE5430] sm:text-sm"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    onClick={() => handleEditSave(record.id)}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-[#EE5430] hover:bg-[#EE5430]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EE5430]"
+                  >
+                    <FaSave className="mr-1.5" size={12} />
+                    Save
+                  </button>
+                  <button
+                    onClick={handleEditCancel}
+                    className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EE5430]"
+                  >
+                    <FaTimes className="mr-1.5" size={12} />
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      {new Date(record.date).toLocaleDateString()}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-900">{record.description}</p>
+                  </div>
+                  {isEditing && (
                     <div className="flex gap-2">
                       <button
-                        onClick={handleSaveEdit}
-                        className="text-green-600 hover:text-green-700 transition-colors"
-                        title="Save changes"
+                        onClick={() => handleEditStart(record)}
+                        className="text-gray-400 hover:text-gray-600"
                       >
-                        <FaSave size={16} />
+                        <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={handleCancelEdit}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
-                        title="Cancel editing"
+                        onClick={() => handleDelete(record.id)}
+                        className="text-gray-400 hover:text-red-600"
                       >
-                        <FaTimes size={16} />
+                        <FaTrash size={16} />
                       </button>
                     </div>
-                  </div>
-                  
-                  <FormField
-                    label="Date"
-                    value={editedRecord?.date}
-                    type="date"
-                    isEditing={true}
-                    onChange={(value) => {
-                      if (!editedRecord) return;
-                      setEditedRecord({
-                        ...editedRecord,
-                        date: value
-                      });
-                    }}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {availableTags.map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => {
-                          if (!editedRecord) return;
-                          const newTags = editedRecord.tags?.includes(tag)
-                            ? editedRecord.tags.filter(t => t !== tag)
-                            : [...(editedRecord.tags || []), tag];
-                          setEditedRecord({
-                            ...editedRecord,
-                            tags: newTags
-                          });
-                        }}
-                        className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-                          editedRecord?.tags?.includes(tag)
-                            ? 'bg-[#EE5430] text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                  <FormField
-                    label="Description"
-                    value={editedRecord?.description}
-                    type="textarea"
-                    isEditing={true}
-                    onChange={(value) => {
-                      if (!editedRecord) return;
-                      setEditedRecord({
-                        ...editedRecord,
-                        description: value
-                      });
-                    }}
-                  />
-                  <FormField
-                    label="Provider"
-                    value={editedRecord?.provider}
-                    isEditing={true}
-                    onChange={(value) => {
-                      if (!editedRecord) return;
-                      setEditedRecord({
-                        ...editedRecord,
-                        provider: value
-                      });
-                    }}
-                  />
-                  <FormField
-                    label="Cost"
-                    value={editedRecord?.cost}
-                    type="number"
-                    isEditing={true}
-                    onChange={(value) => {
-                      if (!editedRecord) return;
-                      setEditedRecord({
-                        ...editedRecord,
-                        cost: Number(value)
-                      });
-                    }}
-                  />
-                  <FormField
-                    label="Notes"
-                    value={editedRecord?.notes}
-                    type="textarea"
-                    isEditing={true}
-                    onChange={(value) => {
-                      if (!editedRecord) return;
-                      setEditedRecord({
-                        ...editedRecord,
-                        notes: value
-                      });
-                    }}
-                  />
+                  )}
                 </div>
-              ) : (
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-gray-900">
-                        {record.date ? new Date(record.date).toLocaleDateString() : 'Date not specified'}
-                      </span>
-                      <div className="flex gap-1">
-                        {record.tags?.map(tag => (
-                          <span
-                            key={tag}
-                            className={`px-2 py-0.5 text-xs rounded-full ${
-                              tag === 'service'
-                                ? 'bg-blue-100 text-blue-800'
-                                : tag === 'maintenance'
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
-                          >
-                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-gray-600 text-sm">{record.description}</p>
-                    {record.provider && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        Provider: {record.provider}
-                      </p>
-                    )}
-                    {record.cost > 0 && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        Cost: {formatPrice(record.cost)}
-                      </p>
-                    )}
-                    {record.notes && (
-                      <p className="text-sm text-gray-500 mt-1 italic">
-                        {record.notes}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(record)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Edit record"
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {record.tags?.map(tag => (
+                    <span
+                      key={tag}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium
+                        ${TAG_COLORS[tag as HistoryTag]?.bg || 'bg-gray-100'}
+                        ${TAG_COLORS[tag as HistoryTag]?.text || 'text-gray-800'}`}
                     >
-                      <FaEdit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(record.id)}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
-                      title="Delete record"
-                    >
-                      <FaTrash size={16} />
-                    </button>
-                  </div>
+                      {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                    </span>
+                  ))}
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+                {record.provider && (
+                  <p className="text-sm text-gray-600">Provider: {record.provider}</p>
+                )}
+                {record.cost > 0 && (
+                  <p className="text-sm text-gray-600">Cost: ${record.cost.toFixed(2)}</p>
+                )}
+                {record.notes && (
+                  <p className="text-sm text-gray-500 mt-2">{record.notes}</p>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }; 

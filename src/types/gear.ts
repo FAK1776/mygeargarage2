@@ -18,96 +18,144 @@ export enum GearStatus {
 
 // Guitar specifications interface
 export interface GuitarSpecs {
-  // Body
-  body: {
-    shape: string;
-    size: string;  // e.g., "D-14 Fret"
-    type: string;
-    material: string;
-    topBack: string;
+  // Overview (Category Order: 1)
+  overview: {
+    manufacturer: string;
+    model: string;
+    bodySizeShape: string;
+    series: string;
+    buildType: string;
+    topMaterial: string;
+    bodyMaterial: string;
+    scaleLength: string;
+    nutWidth: string;
+    neckShapeProfile: string;
+    neckTypeConstruction: string;
+    pickupConfiguration: string;
+    countryOfOrigin: string;
+    serialNumber: string;
+  };
+
+  // Top (Category Order: 2)
+  top: {
+    color: string;
     finish: string;
-    depth: string;
     binding: string;
+    inlayMaterial: string;
+    detail: string;
+    bridgeStyle: string;
+    rosette: string;
+    bridgeStringSpacing: string;
+    bridgeMaterial: string;
+    bridgePinMaterial: string;
+    bridgePinDots: string;
+    saddle: string;
+    saddleRadius: string;
+  };
+
+  // Body (Category Order: 3)
+  body: {
+    design: {
+      color: string;
+      finish: string;
+      binding: string;
+      backPurfling: string;
+      backInlayMaterial: string;
+      backDetail: string;
+      sideDetail: string;
+      sideInlayMaterial: string;
+      endpiece: string;
+      endpieceInlay: string;
+      heelcap: string;
+    };
     bracing: {
-      pattern: string;  // e.g., "X-Brace"
-      shape: string;   // e.g., "Scalloped"
+      bodyBracing: string;
+      bracingPattern: string;
+      braceShape: string;
+      braceMaterial: string;
+      braceSize: string;
     };
-    cutaway: string;
-    topColor: string;
-    rosette: {
-      type: string;
-      detail: string;  // e.g., "Abalone with Multi-Stripe"
-    };
-    endpiece: {
-      material: string;
-      inlay: string;  // e.g., "Multi-Stripe"
+    dimensions: {
+      bodyDepth: string;
+      upperBoutWidth: string;
+      upperBoutDepth: string;
+      lowerBoutWidth: string;
+      lowerBoutDepth: string;
     };
   };
 
-  // Neck
-  neck: {
-    material: string;
-    shape: string;
-    thickness: string;
-    construction: string;
-    finish: string;
-    scaleLength: string;
-    heelcap: string;  // Material or color
+  // Neck & Headstock (Category Order: 4)
+  neckAndHeadstock: {
+    neck: {
+      taper: string;
+      material: string;
+      color: string;
+      finish: string;
+      binding: string;
+      numberOfFrets: string;
+      joinsBodyAt: string;
+      sideDots: string;
+      trussRodType: string;
+      nutMaterial: string;
+    };
     fingerboard: {
       material: string;
       radius: string;
-      widthAt12thFret: string;  // e.g., "2 1/8''"
-      inlays: string;
-      binding: string;
-      sideDots: string;
+      widthAt12thFret: string;
+      inlayStyle: string;
+      inlayMaterial: string;
+      bindingMaterial: string;
+      rolledEdges: string;
+      fretSize: string;
+      fretMarkerStyle: string;
     };
-    numberOfFrets: string;
-    fretSize: string;
-    nut: {
-      material: string;
-      width: string;
+    headstock: {
+      shape: string;
+      plateMaterial: string;
+      logoStyle: string;
+      bindingMaterial: string;
+      detail: string;
     };
   };
 
-  // Headstock
-  headstock: {
-    shape: string;
-    binding: string;
-    tuningMachines: string;
-    headplateLogo: string;
+  // Electronics (Category Order: 5)
+  electronics: {
+    acousticPickup: string;
+    numberOfPickups: string;
+    bridgePickup: string;
+    middlePickup: string;
+    neckPickup: string;
+    pickupColor: string;
+    controls: string;
+    pickupSwitching: string;
+    outputType: string;
+    specialElectronics: string;
   };
 
-  // Hardware
+  // Hardware (Category Order: 6)
   hardware: {
     bridge: string;
-    tailpiece: string;
     finish: string;
-    pickguard: {
-      type: string;
-      inlay: string;  // e.g., "None" or specific inlay pattern
-    };
-    knobs: string;
+    tuningMachines: string;
+    tuningMachineKnobs: string;
+    tailpiece: string;
+    pickguard: string;
+    pickguardInlay: string;
+    controlKnobs: string;
+    switchTip: string;
+    neckPlate: string;
     strapButtons: string;
   };
 
-  // Electronics
-  electronics: {
-    pickupSystem: string;
-    neckPickup: string;
-    bridgePickup: string;
-    pickupConfiguration: string;
-    controls: string;
-    pickupSwitching: string;
-    auxiliarySwitching: string;
-  };
-
-  // Extras
-  extras: {
-    recommendedStrings: string;  // e.g., "Authentic Acoustic Lifespan® 2.0 Phosphor Bronze - Medium"
-    strings: string;
-    caseOrGigBag: string;
-    modificationsRepairs: string;
-    uniqueFeatures: string;
+  // Miscellaneous (Category Order: 7)
+  miscellaneous: {
+    pleked: boolean;
+    label: string;
+    case: string;
+    recommendedStrings: string;
+    weight: string;
+    orientation: string;
+    comments: string;
   };
 }
 
@@ -123,12 +171,12 @@ export interface GearSearchIndex {
 export interface ServiceRecord {
   id: string;
   date: Date;
-  type: string;  // e.g., "Setup", "Repair", "Maintenance"
+  type: string;
   description: string;
-  provider: string;  // Service provider or technician
+  provider: string;
   cost: number;
   notes?: string;
-  attachments?: string[];  // URLs to receipts, documentation, etc.
+  attachments?: string[];
 }
 
 // Ownership Record
@@ -137,61 +185,56 @@ export interface OwnershipRecord {
   ownerName: string;
   acquiredDate: Date;
   soldDate?: Date;
-  location: string;  // Where the gear was during this ownership
+  location: string;
   purchasePrice?: number;
   salePrice?: number;
   notes?: string;
-  attachments?: string[];  // URLs to receipts, documentation, etc.
+  attachments?: string[];
 }
 
 // Modification Record
 export interface ModificationRecord {
   id: string;
   date: Date;
-  type: string;  // e.g., "Upgrade", "Replacement", "Custom Work"
+  type: string;
   description: string;
-  provider: string;  // Who performed the modification
+  provider: string;
   cost: number;
   reversible: boolean;
   notes?: string;
-  attachments?: string[];  // URLs to documentation, before/after photos, etc.
+  attachments?: string[];
+}
+
+export type HistoryRecordType = 'ownership' | 'modification' | 'maintenance' | 'repairs';
+
+// Base History Record interface
+interface BaseHistoryRecord {
+  id: string;
+  date: Date;
+  description: string;
+  provider?: string;
+  cost?: number;
+  notes?: string;
+  attachments?: string[];
+  type: HistoryRecordType;
+}
+
+// History Record
+export interface HistoryRecord extends BaseHistoryRecord {
+  tags: HistoryRecordType[];
 }
 
 // Base interface for all gear types
 export interface BaseGear {
   id: string;
   userId: string;
-  type: GearType;  // Required field
-  make: string;
-  model: string;
-  year?: string;
-  modelNumber?: string;
-  series?: string;
-  serialNumber?: string;
-  orientation?: string;
-  numberOfStrings?: string;
-  weight?: string;
-  description?: string;
-  subcategory?: string;
+  type: GearType;
+  status: GearStatus;
+  specs?: GuitarSpecs;
+  images: string[];
   createdAt: Date;
   updatedAt: Date;
-  specs?: Record<string, any>;
-  images: string[];  // Array of Base64 encoded images
-  status: GearStatus;  // New field
-  
-  // New fields
-  placeOfOrigin?: string;
-  dateAcquired?: Date;
-  dateSold?: Date;
-  pricePaid?: number;
-  priceSold?: number;
-  acquisitionNotes?: string;
-  saleNotes?: string;
-  label?: string;  // For commemorative or custom guitars
-  pleked?: boolean;  // Whether the guitar has been Plek processed
-  serviceHistory?: ServiceRecord[];
-  ownershipHistory?: OwnershipRecord[];
-  modificationHistory?: ModificationRecord[];
+  serviceHistory?: HistoryRecord[];
 }
 
 // GearFormData now includes all fields except id, userId, createdAt, and updatedAt

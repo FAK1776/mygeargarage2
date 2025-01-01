@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BaseGear } from '../../../types/gear';
+import { BaseGear, HistoryRecord } from '../../../types/gear';
 import { geminiService } from '../../../services/geminiService';
 
 interface GearHistoryChatProps {
@@ -31,24 +31,26 @@ export const GearHistoryChat: React.FC<GearHistoryChatProps> = ({ gear, onUpdate
     try {
       const parsedRecord = await geminiService.parseGearHistory(input, gear) as ParsedHistoryRecord;
       
+      if (!parsedRecord || !parsedRecord.date || !parsedRecord.description) {
+        throw new Error('Failed to parse history record properly');
+      }
+
       // Create a new unified record with the parsed data
-      const newRecord = {
+      const newRecord: HistoryRecord = {
         id: Date.now().toString(),
-        date: new Date(parsedRecord.date),
-        type: parsedRecord.tags.join(', '),
+        date: parsedRecord.date.toISOString(),
         description: parsedRecord.description,
-        provider: parsedRecord.provider,
-        cost: parsedRecord.cost,
-        notes: parsedRecord.notes,
-        tags: parsedRecord.tags
+        provider: parsedRecord.provider || '',
+        cost: parsedRecord.cost || 0,
+        notes: parsedRecord.notes || '',
+        tags: parsedRecord.tags || ['service'] // Default to service tag if none provided
       };
 
-      // Update the history with a single record
-      const updates: Partial<BaseGear> = {
-        serviceHistory: [newRecord, ...(gear.serviceHistory || [])]
-      };
-
-      onUpdate(updates);
+      // Ensure we have a valid array of history records
+      const currentHistory = Array.isArray(gear.serviceHistory) ? gear.serviceHistory : [];
+      
+      // Update the history with the new record
+      onUpdate({ ...gear, serviceHistory: [newRecord, ...currentHistory] });
       setInput('');
     } catch (err) {
       console.error('Error processing history:', err);

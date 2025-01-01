@@ -5,458 +5,259 @@ import { FormField } from '../../../common/FormField';
 interface GuitarSpecsFormProps {
   specs: GuitarSpecs;
   isEditing: boolean;
-  onUpdate: (specs: Partial<GuitarSpecs>) => void;
+  onUpdate: (updates: Partial<GuitarSpecs>) => void;
 }
 
-export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({ specs, isEditing, onUpdate }) => {
-  const handleBodyUpdate = (updates: Partial<GuitarSpecs['body']>) => {
-    onUpdate({ body: { ...specs.body, ...updates } });
+export const GuitarSpecsForm: React.FC<GuitarSpecsFormProps> = ({
+  specs,
+  isEditing,
+  onUpdate,
+}) => {
+  const handleSpecUpdate = (
+    category: keyof GuitarSpecs,
+    subcategory: string | null,
+    field: string,
+    value: string | boolean
+  ) => {
+    const updatedSpecs = { ...specs };
+    
+    if (subcategory) {
+      updatedSpecs[category] = {
+        ...updatedSpecs[category],
+        [subcategory]: {
+          ...updatedSpecs[category][subcategory],
+          [field]: value
+        }
+      };
+    } else {
+      updatedSpecs[category] = {
+        ...updatedSpecs[category],
+        [field]: value
+      };
+    }
+    
+    onUpdate(updatedSpecs);
   };
 
-  const handleBracingUpdate = (updates: Partial<GuitarSpecs['body']['bracing']>) => {
-    handleBodyUpdate({ bracing: { ...specs.body.bracing, ...updates } });
-  };
-
-  const handleRosetteUpdate = (updates: Partial<GuitarSpecs['body']['rosette']>) => {
-    handleBodyUpdate({ rosette: { ...specs.body.rosette, ...updates } });
-  };
-
-  const handleEndpieceUpdate = (updates: Partial<GuitarSpecs['body']['endpiece']>) => {
-    handleBodyUpdate({ endpiece: { ...specs.body.endpiece, ...updates } });
-  };
-
-  const handleNeckUpdate = (updates: Partial<GuitarSpecs['neck']>) => {
-    onUpdate({ neck: { ...specs.neck, ...updates } });
-  };
-
-  const handleFingerboardUpdate = (updates: Partial<GuitarSpecs['neck']['fingerboard']>) => {
-    handleNeckUpdate({ fingerboard: { ...specs.neck.fingerboard, ...updates } });
-  };
-
-  const handleNutUpdate = (updates: Partial<GuitarSpecs['neck']['nut']>) => {
-    handleNeckUpdate({ nut: { ...specs.neck.nut, ...updates } });
-  };
-
-  const handleHeadstockUpdate = (updates: Partial<GuitarSpecs['headstock']>) => {
-    onUpdate({ headstock: { ...specs.headstock, ...updates } });
-  };
-
-  const handleHardwareUpdate = (updates: Partial<GuitarSpecs['hardware']>) => {
-    onUpdate({ hardware: { ...specs.hardware, ...updates } });
-  };
-
-  const handlePickguardUpdate = (updates: Partial<GuitarSpecs['hardware']['pickguard']>) => {
-    handleHardwareUpdate({ pickguard: { ...specs.hardware.pickguard, ...updates } });
-  };
-
-  const handleElectronicsUpdate = (updates: Partial<GuitarSpecs['electronics']>) => {
-    onUpdate({ electronics: { ...specs.electronics, ...updates } });
-  };
-
-  const handleExtrasUpdate = (updates: Partial<GuitarSpecs['extras']>) => {
-    onUpdate({ extras: { ...specs.extras, ...updates } });
-  };
+  const renderSpecificationSection = (
+    title: string,
+    category: keyof GuitarSpecs,
+    fields: { [key: string]: any },
+    subcategory: string | null = null
+  ) => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.entries(fields).map(([field, value]) => (
+          <FormField
+            key={`${category}-${subcategory}-${field}`}
+            label={field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+            value={value?.toString() || ''}
+            isEditing={isEditing}
+            onChange={(newValue) => handleSpecUpdate(category, subcategory, field, newValue)}
+            type={typeof value === 'boolean' ? 'checkbox' : 'text'}
+          />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-8">
-      {/* Body */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Body</h3>
+      {/* Overview Section */}
+      {specs.overview && (
         <div className="space-y-4">
-          <FormField
-            label="Shape"
-            value={specs.body?.shape}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ shape: value })}
-          />
-          <FormField
-            label="Size"
-            value={specs.body?.size}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ size: value })}
-          />
-          <FormField
-            label="Type"
-            value={specs.body?.type}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ type: value })}
-          />
-          <FormField
-            label="Material"
-            value={specs.body?.material}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ material: value })}
-          />
-          <FormField
-            label="Top/Back"
-            value={specs.body?.topBack}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ topBack: value })}
-          />
-          <FormField
-            label="Finish"
-            value={specs.body?.finish}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ finish: value })}
-          />
-          <FormField
-            label="Depth"
-            value={specs.body?.depth}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ depth: value })}
-          />
-          <FormField
-            label="Binding"
-            value={specs.body?.binding}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ binding: value })}
-          />
-          <div className="pl-4 border-l-2 border-gray-200">
-            <h4 className="text-md font-medium mb-2">Bracing</h4>
-            <FormField
-              label="Pattern"
-              value={specs.body?.bracing?.pattern}
-              isEditing={isEditing}
-              onChange={(value) => handleBracingUpdate({ pattern: value })}
-            />
-            <FormField
-              label="Shape"
-              value={specs.body?.bracing?.shape}
-              isEditing={isEditing}
-              onChange={(value) => handleBracingUpdate({ shape: value })}
-            />
-          </div>
-          <FormField
-            label="Cutaway"
-            value={specs.body?.cutaway}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ cutaway: value })}
-          />
-          <FormField
-            label="Top Color"
-            value={specs.body?.topColor}
-            isEditing={isEditing}
-            onChange={(value) => handleBodyUpdate({ topColor: value })}
-          />
-          <div className="pl-4 border-l-2 border-gray-200">
-            <h4 className="text-md font-medium mb-2">Rosette</h4>
-            <FormField
-              label="Type"
-              value={specs.body?.rosette?.type}
-              isEditing={isEditing}
-              onChange={(value) => handleRosetteUpdate({ type: value })}
-            />
-            <FormField
-              label="Detail"
-              value={specs.body?.rosette?.detail}
-              isEditing={isEditing}
-              onChange={(value) => handleRosetteUpdate({ detail: value })}
-            />
-          </div>
-          <div className="pl-4 border-l-2 border-gray-200">
-            <h4 className="text-md font-medium mb-2">Endpiece</h4>
-            <FormField
-              label="Material"
-              value={specs.body?.endpiece?.material}
-              isEditing={isEditing}
-              onChange={(value) => handleEndpieceUpdate({ material: value })}
-            />
-            <FormField
-              label="Inlay"
-              value={specs.body?.endpiece?.inlay}
-              isEditing={isEditing}
-              onChange={(value) => handleEndpieceUpdate({ inlay: value })}
-            />
-          </div>
+          <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+          {renderSpecificationSection('Basic Information', 'overview', specs.overview)}
         </div>
-      </div>
+      )}
 
-      {/* Neck */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Neck</h3>
+      {/* Top Section */}
+      {specs.top && (
         <div className="space-y-4">
-          <FormField
-            label="Material"
-            value={specs.neck?.material}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ material: value })}
-          />
-          <FormField
-            label="Shape"
-            value={specs.neck?.shape}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ shape: value })}
-          />
-          <FormField
-            label="Thickness"
-            value={specs.neck?.thickness}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ thickness: value })}
-          />
-          <FormField
-            label="Construction"
-            value={specs.neck?.construction}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ construction: value })}
-          />
-          <FormField
-            label="Finish"
-            value={specs.neck?.finish}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ finish: value })}
-          />
-          <FormField
-            label="Scale Length"
-            value={specs.neck?.scaleLength}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ scaleLength: value })}
-          />
-          <FormField
-            label="Heelcap"
-            value={specs.neck?.heelcap}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ heelcap: value })}
-          />
-          <div className="pl-4 border-l-2 border-gray-200">
-            <h4 className="text-md font-medium mb-2">Fingerboard</h4>
-            <FormField
-              label="Material"
-              value={specs.neck?.fingerboard?.material}
-              isEditing={isEditing}
-              onChange={(value) => handleFingerboardUpdate({ material: value })}
-            />
-            <FormField
-              label="Radius"
-              value={specs.neck?.fingerboard?.radius}
-              isEditing={isEditing}
-              onChange={(value) => handleFingerboardUpdate({ radius: value })}
-            />
-            <FormField
-              label="Width at 12th Fret"
-              value={specs.neck?.fingerboard?.widthAt12thFret}
-              isEditing={isEditing}
-              onChange={(value) => handleFingerboardUpdate({ widthAt12thFret: value })}
-            />
-            <FormField
-              label="Inlays"
-              value={specs.neck?.fingerboard?.inlays}
-              isEditing={isEditing}
-              onChange={(value) => handleFingerboardUpdate({ inlays: value })}
-            />
-            <FormField
-              label="Binding"
-              value={specs.neck?.fingerboard?.binding}
-              isEditing={isEditing}
-              onChange={(value) => handleFingerboardUpdate({ binding: value })}
-            />
-            <FormField
-              label="Side Dots"
-              value={specs.neck?.fingerboard?.sideDots}
-              isEditing={isEditing}
-              onChange={(value) => handleFingerboardUpdate({ sideDots: value })}
-            />
-          </div>
-          <FormField
-            label="Number of Frets"
-            value={specs.neck?.numberOfFrets}
-            isEditing={isEditing}
-            type="number"
-            onChange={(value) => handleNeckUpdate({ numberOfFrets: value })}
-          />
-          <FormField
-            label="Fret Size"
-            value={specs.neck?.fretSize}
-            isEditing={isEditing}
-            onChange={(value) => handleNeckUpdate({ fretSize: value })}
-          />
-          <div className="pl-4 border-l-2 border-gray-200">
-            <h4 className="text-md font-medium mb-2">Nut</h4>
-            <FormField
-              label="Material"
-              value={specs.neck?.nut?.material}
-              isEditing={isEditing}
-              onChange={(value) => handleNutUpdate({ material: value })}
-            />
-            <FormField
-              label="Width"
-              value={specs.neck?.nut?.width}
-              isEditing={isEditing}
-              onChange={(value) => handleNutUpdate({ width: value })}
-            />
-          </div>
+          <h2 className="text-xl font-bold text-gray-900">Top</h2>
+          {renderSpecificationSection('Top Details', 'top', specs.top)}
         </div>
-      </div>
+      )}
 
-      {/* Headstock */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Headstock</h3>
-        <div className="space-y-4">
-          <FormField
-            label="Shape"
-            value={specs.headstock?.shape}
-            isEditing={isEditing}
-            onChange={(value) => handleHeadstockUpdate({ shape: value })}
-          />
-          <FormField
-            label="Binding"
-            value={specs.headstock?.binding}
-            isEditing={isEditing}
-            onChange={(value) => handleHeadstockUpdate({ binding: value })}
-          />
-          <FormField
-            label="Tuning Machines"
-            value={specs.headstock?.tuningMachines}
-            isEditing={isEditing}
-            onChange={(value) => handleHeadstockUpdate({ tuningMachines: value })}
-          />
-          <FormField
-            label="Headplate Logo"
-            value={specs.headstock?.headplateLogo}
-            isEditing={isEditing}
-            onChange={(value) => handleHeadstockUpdate({ headplateLogo: value })}
-          />
-        </div>
-      </div>
+      {/* Body Section */}
+      {specs.body && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-900">Body</h2>
+          
+          {/* Design Subsection */}
+          {specs.body.design && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Design</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  label="Body Color (Back & Sides)"
+                  value={specs.body.design.color || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'color', value)}
+                />
+                <FormField
+                  label="Body Finish (Back & Sides)"
+                  value={specs.body.design.finish || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'finish', value)}
+                />
+                <FormField
+                  label="Body Binding"
+                  value={specs.body.design.binding || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'binding', value)}
+                />
+                <FormField
+                  label="Back Purfling/Strip"
+                  value={specs.body.design.backPurfling || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'backPurfling', value)}
+                />
+                <FormField
+                  label="Back Inlay Material"
+                  value={specs.body.design.backInlayMaterial || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'backInlayMaterial', value)}
+                />
+                <FormField
+                  label="Back Detail"
+                  value={specs.body.design.backDetail || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'backDetail', value)}
+                />
+                <FormField
+                  label="Side Detail"
+                  value={specs.body.design.sideDetail || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'sideDetail', value)}
+                />
+                <FormField
+                  label="Side Inlay Material"
+                  value={specs.body.design.sideInlayMaterial || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'sideInlayMaterial', value)}
+                />
+                <FormField
+                  label="Endpiece"
+                  value={specs.body.design.endpiece || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'endpiece', value)}
+                />
+                <FormField
+                  label="Endpiece Inlay"
+                  value={specs.body.design.endpieceInlay || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'endpieceInlay', value)}
+                />
+                <FormField
+                  label="Heelcap"
+                  value={specs.body.design.heelcap || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'design', 'heelcap', value)}
+                />
+              </div>
+            </div>
+          )}
 
-      {/* Hardware */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Hardware</h3>
-        <div className="space-y-4">
-          <FormField
-            label="Bridge"
-            value={specs.hardware?.bridge}
-            isEditing={isEditing}
-            onChange={(value) => handleHardwareUpdate({ bridge: value })}
-          />
-          <FormField
-            label="Tailpiece"
-            value={specs.hardware?.tailpiece}
-            isEditing={isEditing}
-            onChange={(value) => handleHardwareUpdate({ tailpiece: value })}
-          />
-          <FormField
-            label="Finish"
-            value={specs.hardware?.finish}
-            isEditing={isEditing}
-            onChange={(value) => handleHardwareUpdate({ finish: value })}
-          />
-          <div className="pl-4 border-l-2 border-gray-200">
-            <h4 className="text-md font-medium mb-2">Pickguard</h4>
-            <FormField
-              label="Type"
-              value={specs.hardware?.pickguard?.type}
-              isEditing={isEditing}
-              onChange={(value) => handlePickguardUpdate({ type: value })}
-            />
-            <FormField
-              label="Inlay"
-              value={specs.hardware?.pickguard?.inlay}
-              isEditing={isEditing}
-              onChange={(value) => handlePickguardUpdate({ inlay: value })}
-            />
-          </div>
-          <FormField
-            label="Knobs"
-            value={specs.hardware?.knobs}
-            isEditing={isEditing}
-            onChange={(value) => handleHardwareUpdate({ knobs: value })}
-          />
-          <FormField
-            label="Strap Buttons"
-            value={specs.hardware?.strapButtons}
-            isEditing={isEditing}
-            onChange={(value) => handleHardwareUpdate({ strapButtons: value })}
-          />
-        </div>
-      </div>
+          {/* Bracing Subsection */}
+          {specs.body.bracing && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Bracing</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  label="Body Bracing"
+                  value={specs.body.bracing.bodyBracing || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'bracing', 'bodyBracing', value)}
+                />
+                <FormField
+                  label="Bracing Pattern"
+                  value={specs.body.bracing.bracingPattern || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'bracing', 'bracingPattern', value)}
+                />
+                <FormField
+                  label="Brace Shape"
+                  value={specs.body.bracing.braceShape || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'bracing', 'braceShape', value)}
+                />
+                <FormField
+                  label="Brace Material"
+                  value={specs.body.bracing.braceMaterial || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'bracing', 'braceMaterial', value)}
+                />
+                <FormField
+                  label="Brace Size"
+                  value={specs.body.bracing.braceSize || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'bracing', 'braceSize', value)}
+                />
+              </div>
+            </div>
+          )}
 
-      {/* Electronics */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Electronics</h3>
-        <div className="space-y-4">
-          <FormField
-            label="Pickup System"
-            value={specs.electronics?.pickupSystem}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ pickupSystem: value })}
-          />
-          <FormField
-            label="Neck Pickup"
-            value={specs.electronics?.neckPickup}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ neckPickup: value })}
-          />
-          <FormField
-            label="Bridge Pickup"
-            value={specs.electronics?.bridgePickup}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ bridgePickup: value })}
-          />
-          <FormField
-            label="Pickup Configuration"
-            value={specs.electronics?.pickupConfiguration}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ pickupConfiguration: value })}
-          />
-          <FormField
-            label="Controls"
-            value={specs.electronics?.controls}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ controls: value })}
-          />
-          <FormField
-            label="Pickup Switching"
-            value={specs.electronics?.pickupSwitching}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ pickupSwitching: value })}
-          />
-          <FormField
-            label="Auxiliary Switching"
-            value={specs.electronics?.auxiliarySwitching}
-            isEditing={isEditing}
-            onChange={(value) => handleElectronicsUpdate({ auxiliarySwitching: value })}
-          />
+          {/* Dimensions Subsection */}
+          {specs.body.dimensions && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dimensions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  label="Body Depth"
+                  value={specs.body.dimensions.bodyDepth || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'dimensions', 'bodyDepth', value)}
+                />
+                <FormField
+                  label="Upper Bout Width"
+                  value={specs.body.dimensions.upperBoutWidth || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'dimensions', 'upperBoutWidth', value)}
+                />
+                <FormField
+                  label="Upper Bout Depth"
+                  value={specs.body.dimensions.upperBoutDepth || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'dimensions', 'upperBoutDepth', value)}
+                />
+                <FormField
+                  label="Lower Bout Width"
+                  value={specs.body.dimensions.lowerBoutWidth || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'dimensions', 'lowerBoutWidth', value)}
+                />
+                <FormField
+                  label="Lower Bout Depth"
+                  value={specs.body.dimensions.lowerBoutDepth || ''}
+                  isEditing={isEditing}
+                  onChange={(value) => handleSpecUpdate('body', 'dimensions', 'lowerBoutDepth', value)}
+                />
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Extras */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Extras</h3>
-        <div className="space-y-4">
-          <FormField
-            label="Recommended Strings"
-            value={specs.extras?.recommendedStrings}
-            isEditing={isEditing}
-            onChange={(value) => handleExtrasUpdate({ recommendedStrings: value })}
-          />
-          <FormField
-            label="Strings"
-            value={specs.extras?.strings}
-            isEditing={isEditing}
-            onChange={(value) => handleExtrasUpdate({ strings: value })}
-          />
-          <FormField
-            label="Case/Gig Bag"
-            value={specs.extras?.caseOrGigBag}
-            isEditing={isEditing}
-            onChange={(value) => handleExtrasUpdate({ caseOrGigBag: value })}
-          />
-          <FormField
-            label="Modifications/Repairs"
-            value={specs.extras?.modificationsRepairs}
-            isEditing={isEditing}
-            type="textarea"
-            onChange={(value) => handleExtrasUpdate({ modificationsRepairs: value })}
-          />
-          <FormField
-            label="Unique Features"
-            value={specs.extras?.uniqueFeatures}
-            isEditing={isEditing}
-            type="textarea"
-            onChange={(value) => handleExtrasUpdate({ uniqueFeatures: value })}
-          />
+      {/* Neck & Headstock Section */}
+      {specs.neckAndHeadstock && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-900">Neck & Headstock</h2>
+          {specs.neckAndHeadstock.neck && renderSpecificationSection('Neck', 'neckAndHeadstock', specs.neckAndHeadstock.neck, 'neck')}
+          {specs.neckAndHeadstock.fingerboard && renderSpecificationSection('Fingerboard', 'neckAndHeadstock', specs.neckAndHeadstock.fingerboard, 'fingerboard')}
+          {specs.neckAndHeadstock.headstock && renderSpecificationSection('Headstock', 'neckAndHeadstock', specs.neckAndHeadstock.headstock, 'headstock')}
         </div>
-      </div>
+      )}
+
+      {/* Electronics Section */}
+      {specs.electronics && renderSpecificationSection('Electronics', 'electronics', specs.electronics)}
+
+      {/* Hardware Section */}
+      {specs.hardware && renderSpecificationSection('Hardware', 'hardware', specs.hardware)}
+
+      {/* Miscellaneous Section */}
+      {specs.miscellaneous && renderSpecificationSection('Miscellaneous', 'miscellaneous', specs.miscellaneous)}
     </div>
   );
 }; 

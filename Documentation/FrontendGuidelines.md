@@ -8,28 +8,39 @@
 - Shared components in `ui` directory
 - Clear component naming conventions
 
-### 2. TypeScript Guidelines
+### 2. Form Handling Guidelines
+- Keep form state local until explicit save action
+- Avoid real-time API updates during typing
+- Use controlled components for form inputs
+- Implement clear save/cancel actions
+- Maintain form state independently of API state
+- Consider form validation requirements
+- Handle unsaved changes appropriately
+
+### 3. TypeScript Guidelines
 - Use strict type checking
 - Define interfaces for all props
 - Avoid `any` type
 - Use type inference when obvious
 - Export types from dedicated files
 
-### 3. React Best Practices
+### 4. React Best Practices
 - Functional components with hooks
 - Custom hooks for shared logic
 - Memoization for expensive operations
 - Proper state management
 - Event handler naming conventions
+- Clear separation of local and API state
+- Explicit user actions for data persistence
 
-### 4. Styling Guidelines
+### 5. Styling Guidelines
 - TailwindCSS for styling
 - Consistent color palette
 - Responsive design patterns
 - Mobile-first approach
 - Component-specific styles when needed
 
-### 5. File Structure
+### 6. File Structure
 ```
 src/
 ├── components/
@@ -45,7 +56,7 @@ src/
 └── config/
 ```
 
-### 6. Component Template
+### 7. Component Template
 ```tsx
 import React from 'react';
 import { ComponentProps } from '../types';
@@ -64,28 +75,28 @@ export const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
 };
 ```
 
-### 7. State Management
+### 8. State Management
 - Local state with useState
 - Complex state with useReducer
 - Global state with context
 - Proper state initialization
 - State update best practices
 
-### 8. Performance Guidelines
+### 9. Performance Guidelines
 - Lazy loading for routes
 - Image optimization
 - Code splitting
 - Bundle size monitoring
 - Performance monitoring
 
-### 9. Testing Guidelines
+### 10. Testing Guidelines
 - Component unit tests
 - Integration testing
 - E2E testing when needed
 - Test naming conventions
 - Test coverage goals
 
-### 10. Documentation
+### 11. Documentation
 - Component documentation
 - Props documentation
 - Function documentation
