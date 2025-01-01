@@ -64,7 +64,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: my-gear-garage
           channelId: staging
-          target: staging-my-gear-garage
+          target: staging
         
       - name: Notify on Success
         if: success()
