@@ -11,7 +11,17 @@ My Gear Garage is a web application designed for musicians to track their gear c
 - Track purchase and sale prices
 - Record ownership dates and status (Own/Want/Sold)
 - Advanced filtering and sorting capabilities
-- Detailed gear specifications storage
+- Comprehensive gear specifications structure:
+  - Overview (manufacturer, model, basic specs)
+  - Top specifications
+  - Body details (design, bracing, dimensions)
+  - Neck & Headstock specifications
+  - Electronics configuration
+  - Hardware components
+  - Additional specifications
+- Dynamic field rendering based on data presence
+- Smart category/subcategory display
+- Support for boolean and text field types
 - Efficient form handling with explicit save actions
 - Local state management for form data
 - Clear feedback for save operations
@@ -69,6 +79,59 @@ My Gear Garage is a web application designed for musicians to track their gear c
 - Optional auto-save draft functionality
 - Form state persistence
 - Clear loading states
+
+## Image Management Requirements
+
+### Core Requirements
+1. Multiple File Upload
+   - Support concurrent file uploads
+   - Show individual progress for each file
+   - Handle errors gracefully
+   - Maintain state consistency
+
+2. Image Operations
+   - Support image deletion
+   - Allow image reordering
+   - Enable drag-and-drop functionality
+   - Provide visual feedback
+
+3. User Experience
+   - Clear loading states
+   - Progress indicators
+   - Error messages
+   - Smooth transitions
+   - Empty state handling
+
+4. Performance
+   - Image compression
+   - Efficient state updates
+   - Proper cleanup
+   - Caching strategy
+
+5. Error Handling
+   - Comprehensive error handling
+   - User-friendly messages
+   - State recovery
+   - Data consistency
+
+### Technical Requirements
+1. Storage Integration
+   - Firebase Storage integration
+   - Proper file management
+   - Cleanup procedures
+   - Access control
+
+2. State Management
+   - Consistent state
+   - Race condition handling
+   - Error recovery
+   - Progress tracking
+
+3. Security
+   - File validation
+   - Size limits
+   - Type restrictions
+   - Access control
 
 ## Success Metrics
 - User engagement metrics

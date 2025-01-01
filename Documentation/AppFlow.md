@@ -24,21 +24,35 @@
 ### 3. Gear Management Flow
 1. Adding New Gear
    - Basic information entry
-   - Image upload
-   - Specifications input
+   - Image upload with progress tracking
+   - Comprehensive specifications input:
+     - Overview section (manufacturer, model, etc.)
+     - Top specifications
+     - Body details (design, bracing, dimensions)
+     - Neck & Headstock details
+     - Electronics configuration
+     - Hardware components
+     - Additional specifications
    - Purchase details
+   - Boolean and text field support
    
 2. Viewing Gear Details
-   - Image gallery
-   - Specifications display
-   - Service history
-   - Timeline integration
+   - Dynamic image gallery
+   - Smart specifications display:
+     - Shows only populated fields
+     - Organized by categories
+     - Collapsible sections
+   - Service history timeline
+   - Edit mode with full field access
+   - Combined manufacturer/model header
 
 3. Updating Gear Status
    - Mark as sold
    - Update condition
    - Add service records
-   - Edit details
+   - Edit specifications
+   - Local state management
+   - Explicit save actions
 
 ### 4. Service History Flow
 1. Adding Service Records
@@ -68,17 +82,22 @@
 
 ### 6. Data Management Flow
 1. Data Entry
-   - Form validation
-   - Image processing
+   - Smart form validation
+   - Progressive image upload
    - Data sanitization
+   - Local state management
+   - Explicit save actions
    
 2. Data Storage
    - Firestore database
    - Cloud storage for images
-   - Real-time updates
+   - Optimized update frequency
+   - State consistency checks
 
 ### 7. Error Handling Flow
 - Form validation errors
 - API error responses
 - Image upload issues
-- Authentication failures 
+- Authentication failures
+- State recovery procedures
+- User-friendly error messages 

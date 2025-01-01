@@ -10,7 +10,17 @@ A web application for musicians to track their gear collection, including purcha
 - Track purchase and sale prices
 - Record ownership dates and status (Own/Want/Sold)
 - Filter and sort gear by various criteria
-- Detailed gear specifications and history
+- Comprehensive gear specifications structure:
+  - Overview (manufacturer, model, basic specs)
+  - Top specifications
+  - Body details (design, bracing, dimensions)
+  - Neck & Headstock specifications
+  - Electronics configuration
+  - Hardware components
+  - Additional specifications
+- Dynamic field rendering based on data presence
+- Smart category/subcategory display
+- Support for boolean and text field types
 
 ### Service History
 - Log maintenance and service records
@@ -136,14 +146,16 @@ For additional support or questions:
 
 ## Recent Updates
 
-- Enhanced timeline UI with improved readability
-- Added gear images to purchase and sale events
-- Improved mobile responsiveness
-- Standardized headers and typography
-- Fixed gear details overlay functionality
-- Enhanced filter and sort capabilities
-- Improved service history integration
-- Added touch-friendly mobile interface
+- Implemented comprehensive guitar specifications structure
+- Enhanced GearDetailsOverlay with dynamic field rendering
+- Added smart category/subcategory display logic
+- Improved header updates and state management
+- Enhanced component organization and reusability
+- Added support for boolean fields with checkbox inputs
+- Improved form handling with local state management
+- Enhanced visual hierarchy and consistency
+- Optimized specification storage and retrieval
+- Added proper type support for all specification fields
 
 ## License
 

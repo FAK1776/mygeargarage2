@@ -18,7 +18,14 @@ src/
 │   ├── gear/
 │   │   ├── details/
 │   │   │   ├── GearImageGallery.tsx
-│   │   │   └── GearSpecifications.tsx
+│   │   │   ├── GearSpecifications.tsx
+│   │   │   ├── GearBasicInfo.tsx
+│   │   │   ├── GearPriceInfo.tsx
+│   │   │   ├── GearHistory.tsx
+│   │   │   └── GearHistoryChat.tsx
+│   │   ├── forms/
+│   │   │   ├── GearSpecsForm.tsx
+│   │   │   └── GearDetailsForm.tsx
 │   │   ├── GearCard.tsx
 │   │   ├── GearList.tsx
 │   │   └── GearDetailsOverlay.tsx
@@ -33,7 +40,8 @@ src/
 │       ├── Button.tsx
 │       ├── Input.tsx
 │       ├── Modal.tsx
-│       └── Timeline.tsx
+│       ├── Timeline.tsx
+│       └── FormField.tsx
 ├── pages/
 │   ├── Home.tsx
 │   ├── MyGear.tsx
@@ -42,23 +50,29 @@ src/
 ├── hooks/
 │   ├── useAuth.ts
 │   ├── useGear.ts
-│   └── useTimeline.ts
+│   ├── useTimeline.ts
+│   └── useForm.ts
 ├── services/
 │   ├── authService.ts
 │   ├── gearService.ts
 │   ├── timelineService.ts
-│   └── aiService.ts
+│   ├── aiService.ts
+│   └── specificationService.ts
 ├── types/
 │   ├── gear.ts
 │   ├── service.ts
-│   └── timeline.ts
+│   ├── timeline.ts
+│   └── specifications.ts
 ├── utils/
 │   ├── dateUtils.ts
 │   ├── imageUtils.ts
-│   └── formatters.ts
+│   ├── formatters.ts
+│   ├── gearUtils.ts
+│   └── specificationUtils.ts
 ├── config/
 │   ├── firebase.ts
-│   └── constants.ts
+│   ├── constants.ts
+│   └── specifications.ts
 └── App.tsx
 ```
 
@@ -119,28 +133,35 @@ tests/
 
 ### 1. Component Files
 - **GearCard.tsx**: Individual gear item display
-- **TimelineView.tsx**: Main timeline component
-- **ServiceForm.tsx**: Service record form
+- **GearSpecifications.tsx**: Comprehensive gear specifications component
+- **GearDetailsOverlay.tsx**: Main gear details view with edit capabilities
+- **GearHistoryChat.tsx**: Service history chat interface
+- **FormField.tsx**: Reusable form field component
 
 ### 2. Service Files
 - **gearService.ts**: Gear CRUD operations
 - **timelineService.ts**: Timeline management
 - **aiService.ts**: AI integration
+- **specificationService.ts**: Specification management
 
 ### 3. Configuration Files
 - **.env**: Environment variables
 - **firebase.json**: Firebase configuration
 - **tsconfig.json**: TypeScript settings
+- **specifications.ts**: Specification structure configuration
 
 ### 4. Type Definition Files
 - **gear.ts**: Gear-related types
 - **service.ts**: Service-related types
 - **timeline.ts**: Timeline-related types
+- **specifications.ts**: Comprehensive specification types
 
 ### 5. Utility Files
 - **dateUtils.ts**: Date manipulation
 - **imageUtils.ts**: Image processing
 - **formatters.ts**: Data formatting
+- **gearUtils.ts**: Gear-specific utilities
+- **specificationUtils.ts**: Specification processing utilities
 
 ## File Naming Conventions
 

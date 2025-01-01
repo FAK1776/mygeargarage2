@@ -19,6 +19,7 @@ collections/
 ├── gear/
 │   └── gearId/
 │       ├── details
+│       ├── specifications
 │       ├── images
 │       └── history
 ├── services/
@@ -77,6 +78,10 @@ service firebase.storage {
 ### 5. API Services
 - Authentication Service
 - Gear Service
+  - CRUD operations
+  - Image management
+  - Specification updates
+  - Service history
 - Timeline Service
 - Storage Service
 - User Service
@@ -102,6 +107,74 @@ interface Gear {
   purchasePrice: number;
   status: 'Own' | 'Want' | 'Sold';
   images: string[];
+  specifications: GuitarSpecs;
+}
+
+interface GuitarSpecs {
+  overview: {
+    manufacturer: string;
+    model: string;
+    bodySizeShape: string;
+    series: string;
+    buildType: string;
+    // ... other overview fields
+  };
+  top: {
+    color: string;
+    finish: string;
+    binding: string;
+    // ... other top fields
+  };
+  body: {
+    design: {
+      color: string;
+      finish: string;
+      binding: string;
+      // ... other design fields
+    };
+    bracing: {
+      bodyBracing: string;
+      bracingPattern: string;
+      // ... other bracing fields
+    };
+    dimensions: {
+      bodyDepth: string;
+      upperBoutWidth: string;
+      // ... other dimension fields
+    };
+  };
+  neckHeadstock: {
+    neck: {
+      material: string;
+      profile: string;
+      // ... other neck fields
+    };
+    fingerboard: {
+      material: string;
+      radius: string;
+      // ... other fingerboard fields
+    };
+    headstock: {
+      shape: string;
+      material: string;
+      // ... other headstock fields
+    };
+  };
+  electronics: {
+    pickupConfiguration: string;
+    controls: string;
+    // ... other electronics fields
+  };
+  hardware: {
+    bridge: string;
+    tuningMachines: string;
+    // ... other hardware fields
+  };
+  miscellaneous: {
+    pleked: boolean;
+    case: string;
+    // ... other misc fields
+  };
 }
 
 interface Service {
@@ -128,6 +201,8 @@ interface Service {
 - Caching implementation
 - Rate limiting
 - Cost optimization
+- Efficient specification updates
+- Smart data fetching
 
 ### 9. Monitoring
 - Error tracking
