@@ -33,7 +33,7 @@ if (missingKeys.length > 0) {
   throw new Error(`Firebase configuration is incomplete. Missing: ${missingKeys.join(', ')}`);
 }
 
-// Initialize Firebase
+let app;
 try {
   console.log('Initializing Firebase with config:', {
     apiKey: firebaseConfig.apiKey ? 'present' : 'missing',
@@ -44,11 +44,12 @@ try {
     appId: firebaseConfig.appId ? 'present' : 'missing'
   });
   
-  const app = initializeApp(firebaseConfig);
-  export const auth = getAuth(app);
-  export const db = getFirestore(app);
-  export const storage = getStorage(app);
+  app = initializeApp(firebaseConfig);
 } catch (error) {
   console.error('Error initializing Firebase:', error);
   throw error;
-} 
+}
+
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app); 
