@@ -12,6 +12,19 @@
   - Smart conditional rendering
   - Category-based organization
 
+#### UI Components
+##### GuitarQuotes
+A dynamic quote rotation component used on the login page:
+- Located in `src/components/ui/GuitarQuotes.tsx`
+- Features:
+  - 6-second display time per quote
+  - Smooth fade transitions (1-second duration)
+  - Fixed-height container (160px) to prevent layout shifts
+  - Centered content with overflow handling
+  - Semi-transparent backdrop with blur effect
+  - Responsive text sizing
+  - Guitar-related quotes from famous musicians
+
 ### 2. Form Handling Guidelines
 - Keep form state local until explicit save action
 - Implement loading states during form submission
@@ -186,3 +199,66 @@ export const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
 4. Handle all possible error states
 5. Maintain proper type safety
 6. Use proper logging for debugging 
+
+## Component Patterns
+
+### Floating Elements
+When implementing floating elements (like the My Gear Guru chat bot):
+- Use fixed positioning with proper z-index management
+- Ensure proper stacking context with overlays
+- Implement click-outside handling for dismissal
+- Add proper spacing from viewport edges
+- Consider mobile responsiveness
+
+Example:
+```tsx
+<div className="fixed bottom-4 right-4 z-50">
+  {/* Floating content */}
+</div>
+```
+
+### Chat Components
+When implementing chat interfaces:
+1. **Structure**
+   - Use a container with fixed height and overflow
+   - Implement proper message grouping
+   - Add auto-scrolling behavior for new messages
+   - Include loading states and typing indicators
+
+2. **State Management**
+   - Maintain message history in state
+   - Handle loading states for responses
+   - Implement proper error handling
+   - Consider message persistence
+
+3. **Accessibility**
+   - Ensure keyboard navigation
+   - Add proper ARIA labels
+   - Implement focus management
+   - Consider screen reader support
+
+Example Chat Component Pattern:
+```tsx
+const ChatComponent = () => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  return (
+    <div className="flex flex-col h-[500px]">
+      <div className="flex-1 overflow-y-auto">
+        {messages.map(message => (
+          <MessageComponent key={message.id} {...message} />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      <ChatInput onSubmit={handleSubmit} disabled={loading} />
+    </div>
+  );
+};
+``` 
