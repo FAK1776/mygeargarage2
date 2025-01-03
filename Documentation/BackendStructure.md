@@ -16,9 +16,10 @@
 ### 3. AI Services
 - Gear Parsing Service
   - Google Gemini integration
-  - Specification parsing
-  - Field mapping and validation
-  - Error handling
+  - Case-insensitive response parsing
+  - Fallback parsing mechanisms
+  - Error handling and recovery
+  - Environment-specific configuration
 - Story Generation Service
   - Collection insights
   - Gear stories
@@ -144,6 +145,8 @@ service firebase.storage {
 - User-friendly error messages
 - Validation error handling
 - API error recovery
+- Fallback mechanisms
+- Service-specific error handling
 
 ## Performance Optimization
 - Query optimization
@@ -151,10 +154,42 @@ service firebase.storage {
 - Image optimization
 - Batch operations
 - Real-time updates
+- Build size optimization
+- Code splitting
 
 ## Security Measures
 - Authentication checks
 - Data validation
 - Input sanitization
 - Rate limiting
-- API key management 
+- API key management
+- Environment security
+- Access control
+
+### Environment Configuration
+- Development Environment
+  - Local environment variables
+  - Development API keys
+  - Local Firebase configuration
+- Staging Environment
+  - Staging-specific variables
+  - Staging API configuration
+  - Staging Firebase setup
+- Production Environment
+  - Production variables
+  - Production API keys
+  - Production Firebase config
+
+### Build and Deployment
+- Development Build
+  - `npm run dev`
+  - Local environment
+  - Hot module replacement
+- Staging Build
+  - `npm run build:staging`
+  - Staging environment variables
+  - Staging deployment target
+- Production Build
+  - `npm run build`
+  - Production environment
+  - Optimized assets 

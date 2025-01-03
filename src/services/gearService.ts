@@ -23,10 +23,21 @@ export class GearService {
 
     console.log('Processed service history:', serviceHistory);
 
+    // Use enums directly without converting to lowercase
+    const type = data.type || GearType.Other;
+    const status = data.status || GearStatus.Own;
+
+    // Construct display name from make and model if name is not set
+    const name = data.name || (data.make && data.model ? `${data.make} ${data.model}` : 'Unnamed Guitar');
+
+    console.log('Processing gear type and status:', { type, status, name });
+
     return {
       id: doc.id,
       ...data,
-      type: data.type || GearType.Other,
+      type,
+      status,
+      name,
       createdAt: data.createdAt?.toDate?.() || data.createdAt,
       updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
       dateAcquired: data.dateAcquired?.toDate?.() || data.dateAcquired,
@@ -416,4 +427,7 @@ export class GearService {
     
     return null;
   }
-} 
+}
+
+// Export a singleton instance
+export const gearService = new GearService(); 

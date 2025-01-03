@@ -7,32 +7,44 @@ interface FAQItem {
 
 const faqs: FAQItem[] = [
   {
-    question: "What is My Gear Garage?",
-    answer: "My Gear Garage is a digital platform for musicians to track, manage, and tell stories about their gear collection. You can catalog your owned gear, maintain a wishlist, and keep track of sold items."
+    question: "What is Axe Vault?",
+    answer: "Axe Vault is a comprehensive platform for musicians to track, manage, and document their gear collection. You can catalog instruments, track service history, view a timeline of events, and get insights about your collection."
+  },
+  {
+    question: "How do I schedule maintenance for my gear?",
+    answer: "Navigate to the Maintenance Dashboard and click 'Schedule Maintenance'. Select your gear item, enter the task description, set the frequency (e.g., every 3 months), and choose a due date. The system will automatically track and remind you of upcoming maintenance tasks."
+  },
+  {
+    question: "How do I manage maintenance tasks?",
+    answer: "On the Maintenance Dashboard, you can view all scheduled tasks. Click the green 'Complete' button to mark a task as done - it will automatically schedule the next occurrence. Use the 'Reschedule' button to adjust due dates. Completed tasks remain visible for reference."
   },
   {
     question: "How do I add new gear to my collection?",
-    answer: "Click the 'Add Gear' button in the navigation bar. Fill out the details about your gear including make, model, and status (Own, Want, or Sold). You can also add photos and notes about your gear."
+    answer: "Click 'Add Gear' in the navigation bar. Our smart specification parser will help you enter gear details, or you can manually input specifications. Add photos with real-time upload progress, and all changes are automatically saved."
   },
   {
-    question: "What's the difference between Own, Want, and Sold status?",
-    answer: "'Own' is for gear you currently possess, 'Want' creates a wishlist of gear you're interested in acquiring, and 'Sold' helps you track gear you've previously owned but have since sold."
+    question: "How does the Timeline View work?",
+    answer: "The Timeline View shows a chronological display of all gear-related events including purchases, sales, and service history. You can filter by event type, specific instruments, or use the full-text search to find particular events."
   },
   {
-    question: "What is the Gear Story feature?",
-    answer: "The Gear Story feature uses AI to generate engaging narratives about your gear collection. It analyzes your collection and creates unique stories in different styles, highlighting interesting patterns and insights about your gear choices."
+    question: "What kind of specifications can I track?",
+    answer: "The application supports comprehensive specifications including overview (manufacturer, model), body details (design, bracing, dimensions), neck & headstock specs, electronics configuration, and hardware components. Fields are dynamically rendered based on your gear type."
   },
   {
-    question: "Can I edit or delete gear from my collection?",
-    answer: "Yes, you can edit or delete any gear in your collection. Each gear card has options to edit details or remove the item completely. You can also change the status of gear items as your collection evolves."
+    question: "How do I manage service history?",
+    answer: "Each gear item has a service history section where you can log maintenance, repairs, and modifications. You can track service providers, costs, and categorize service types. All service records appear in your timeline view. Soon, you'll be able to automatically add completed maintenance tasks to your gear's history."
   },
   {
-    question: "Is my gear data private?",
-    answer: "Yes, your gear collection data is private and only visible to you when logged into your account. We use secure authentication and database systems to protect your information."
+    question: "What insights does the Profile section provide?",
+    answer: "The Profile section shows collection statistics, gear distribution, and insights about your collection. You can also manage your preferences, customize your experience, and adjust notification settings."
   },
   {
-    question: "How do I organize my gear collection?",
-    answer: "You can filter your gear by status (Own/Want/Sold) and use the search function to find specific items. The My Profile page also provides insights and statistics about your collection."
+    question: "Is my gear data private and secure?",
+    answer: "Yes, your data is private and secured using Firebase Authentication and Security Rules. Images are stored securely in Firebase Storage, and all data transfers are encrypted."
+  },
+  {
+    question: "How can I organize and filter my collection?",
+    answer: "The Home page offers comprehensive filtering options, quick actions for common tasks, and a responsive grid layout. You can use instant search, sort by various criteria, and view collection statistics at a glance."
   }
 ];
 

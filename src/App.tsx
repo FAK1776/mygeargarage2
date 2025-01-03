@@ -9,6 +9,7 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { useAuth } from './hooks/useAuth';
 import Timeline from './pages/Timeline';
+import { MaintenanceDashboard } from './pages/MaintenanceDashboard';
 
 function App() {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ function App() {
             <Route path="/add-gear" element={user ? <AddGear /> : <Navigate to="/login" />} />
             <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
             <Route path="/timeline" element={user ? <Timeline /> : <Navigate to="/login" />} />
+            <Route path="/maintenance" element={user ? <MaintenanceDashboard /> : <Navigate to="/login" />} />
             <Route path="/faq" element={<FAQ />} />
           </Routes>
         </main>

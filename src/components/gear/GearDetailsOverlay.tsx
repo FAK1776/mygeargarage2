@@ -102,54 +102,59 @@ export const GearDetailsOverlay: React.FC<GearDetailsOverlayProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-y-auto ${
+      className={`fixed inset-0 z-50 ${
         isOpen ? 'block' : 'hidden'
       }`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
-      <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center p-4">
-        <div 
-          className="relative bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <GearDetailsHeader
-            gear={gear}
-            isEditMode={isEditMode}
-            onSave={handleSave}
-            onEdit={() => setIsEditMode(true)}
-            onClose={onClose}
-          />
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50"
+        onClick={onClose}
+      />
 
-          <div className="flex-1 overflow-y-auto">
-            <div className="flex gap-8 p-6">
-              {/* Left Column */}
-              <div className="w-1/3 space-y-8">
-                <GearImageGallery
-                  gear={gear}
-                  onUpdate={onUpdate}
-                  onImageUpload={handleImageUpload}
-                  isEditing={true}
-                />
+      {/* Content */}
+      <div className="fixed inset-0 pt-[64px] pointer-events-none">
+        <div className="container mx-auto max-w-4xl h-full">
+          <div 
+            className="pointer-events-auto bg-white h-full overflow-y-auto rounded-t-lg shadow-xl"
+          >
+            <GearDetailsHeader
+              gear={gear}
+              isEditMode={isEditMode}
+              onSave={handleSave}
+              onEdit={() => setIsEditMode(true)}
+              onClose={onClose}
+            />
 
-                <div className="border-t pt-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Instrument History</h2>
-                  <GearHistory
+            <div className="px-6 py-6">
+              <div className="flex gap-8">
+                {/* Left Column */}
+                <div className="w-1/3 space-y-8">
+                  <GearImageGallery
                     gear={gear}
                     onUpdate={onUpdate}
+                    onImageUpload={handleImageUpload}
                     isEditing={true}
                   />
-                </div>
-              </div>
 
-              {/* Right Column - Specifications */}
-              <GearSpecifications
-                gear={gear}
-                specs={specs}
-                isEditMode={isEditMode}
-                onSpecUpdate={handleSpecUpdate}
-              />
+                  <div className="border-t pt-8">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">Instrument History</h2>
+                    <GearHistory
+                      gear={gear}
+                      onUpdate={onUpdate}
+                      isEditing={true}
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column - Specifications */}
+                <GearSpecifications
+                  gear={gear}
+                  specs={specs}
+                  isEditMode={isEditMode}
+                  onSpecUpdate={handleSpecUpdate}
+                />
+              </div>
             </div>
           </div>
         </div>

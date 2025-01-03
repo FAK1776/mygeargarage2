@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { BaseGear, GearType, GuitarSpecs, ServiceRecord, OwnershipRecord, ModificationRecord } from '../types/gear';
+import { BaseGear, GearType, GearStatus, GuitarSpecs, ServiceRecord, OwnershipRecord, ModificationRecord } from '../types/gear';
 
 export class GeminiService {
   private model;
@@ -134,7 +134,40 @@ Format your response as a JSON object with these exact field names and structure
 Input specifications:
 {input_text}`;
 
+  private HISTORY_PROMPT = `You are a gear history parser. Convert the following text about gear history into a structured format. Extract the following information:
+1. date (infer from context if not explicit, default to today if unclear)
+2. description (cleaned and standardized version of the input)
+3. provider (if mentioned)
+4. cost (if mentioned)
+5. tags (array of relevant tags from: ownership, modification, maintenance, repairs)
+6. notes (any additional details)
+
+Format your response as a JSON object with these exact fields, using lowercase field names. Use empty strings for unknown text fields, 0 for unknown numbers, and empty arrays for unknown arrays.
+
+Input text:
+{input_text}`;
+
+  private CHAT_PROMPT = `You are a helpful assistant for a musician's gear collection. You have access to their current gear collection, wishlist, and complete service/event history for each piece of gear. Help them by answering questions about their gear, maintenance history, modifications, and providing insights.
+
+Current Collection:
+{collection}
+
+Gear History:
+{history}
+
+Wishlist:
+{wishlist}
+
+Please provide helpful, concise responses. When discussing history events, include dates when relevant. If you reference specific gear, use its exact make and model. If you make suggestions, explain your reasoning.
+
+User Question: {input}`;
+
   constructor() {
+    if (!import.meta.env.VITE_GOOGLE_AI_API_KEY) {
+      console.error('Gemini API key is missing!');
+      throw new Error('Gemini API key is required');
+    }
+    console.log('Initializing Gemini service with API key:', import.meta.env.VITE_GOOGLE_AI_API_KEY.substring(0, 4) + '...');
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_AI_API_KEY);
     this.model = genAI.getGenerativeModel({ model: "gemini-pro" });
   }
@@ -315,9 +348,7 @@ Input specifications:
     const cleanedText = this.cleanSpecificationText(text);
     console.log('Cleaned text:', cleanedText);
 
-    const prompt = `${this.PARSE_PROMPT}
-
-${cleanedText}`;
+    const prompt = `${this.PARSE_PROMPT}\n\n${cleanedText}`;
     console.log('Generated prompt:', prompt);
 
     try {
@@ -337,8 +368,193 @@ ${cleanedText}`;
       return specs;
     } catch (error) {
       console.error('Error in parseGearSpecs:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      }
+      throw new Error('Failed to process specifications. Please check the API key and try again.');
+    }
+  }
+
+  async parseGearHistory(text: string, gear: BaseGear): Promise<any> {
+    console.log('=== Starting parseGearHistory ===');
+    console.log('Input text:', text);
+    console.log('Gear context:', gear);
+
+    try {
+      const lowerText = text.toLowerCase();
+      const yesterdayMatch = lowerText.includes('yesterday');
+      const lastWeekMatch = lowerText.includes('last week');
+      const costMatch = text.match(/\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/);
+      const providerMatch = text.match(/(?:at|by|from|to)\s+([^.,]+)(?:[.,]|\s+(?:for|and))/i);
+      const tags: string[] = [];
+
+      if (lowerText.includes('mod') || lowerText.includes('modify') || lowerText.includes('upgrade')) {
+        tags.push('modification');
+      }
+      if (lowerText.includes('bought') || lowerText.includes('sold') || lowerText.includes('purchase')) {
+        tags.push('ownership');
+      }
+      
+      // Determine date
+      let date = new Date();
+      if (yesterdayMatch) {
+        date = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      } else if (lastWeekMatch) {
+        date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      }
+      
+      // Format the prompt
+      const prompt = this.HISTORY_PROMPT
+        .replace('{input_text}', text)
+        + `\n\nContext: This is about a ${gear.make} ${gear.model}.`;
+
+      console.log('Generated prompt:', prompt);
+      
+      // Send to Gemini
+      console.log('Sending request to Gemini...');
+      const result = await this.model.generateContent(prompt);
+      console.log('Raw Gemini response:', result);
+      
+      const response = await result.response;
+      console.log('Extracted response:', response);
+      
+      const responseText = response.text();
+      console.log('Response text:', responseText);
+      
+      // Parse the JSON response
+      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
+      if (!jsonMatch) {
+        throw new Error('Could not find JSON in response');
+      }
+      
+      const parsedData = JSON.parse(jsonMatch[1]);
+      console.log('Parsed data:', parsedData);
+      
+      // Clean up the cost value to ensure it's a number
+      const cost = typeof parsedData.cost === 'string' 
+        ? parseInt(parsedData.cost.replace(/[^0-9]/g, ''))
+        : parsedData.cost || (costMatch ? parseInt(costMatch[1].replace(/[^0-9]/g, '')) : 0);
+      
+      // Return the structured data with the properly handled date
+      return {
+        date: date.toISOString(), // Always return as ISO string
+        description: parsedData.description || text.trim(),
+        provider: parsedData.provider || providerMatch?.[1]?.trim() || '',
+        cost: cost,
+        tags: parsedData.tags?.length > 0 ? parsedData.tags : ['maintenance'],
+        notes: parsedData.notes || ''
+      };
+    } catch (error) {
+      console.error('Error in parseGearHistory:', error);
       throw error;
     }
+  }
+
+  async queryCollection(input: string, collection: BaseGear[], wishlist: BaseGear[]): Promise<string> {
+    console.log('=== Starting queryCollection ===');
+    console.log('Input:', input);
+    console.log('Collection:', collection);
+    console.log('Wishlist:', wishlist);
+
+    try {
+      // Format the collection and wishlist for the prompt
+      const collectionText = collection.map(gear => 
+        `- ${gear.make} ${gear.model} (${gear.type})`
+      ).join('\n');
+
+      // Format the history for each piece of gear
+      const historyText = collection.map(gear => {
+        if (!gear.serviceHistory || gear.serviceHistory.length === 0) {
+          return `${gear.make} ${gear.model}: No recorded history`;
+        }
+
+        const events = gear.serviceHistory
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Most recent first
+          .map(event => {
+            const date = new Date(event.date).toLocaleDateString();
+            const cost = event.cost ? `($${event.cost})` : '';
+            const provider = event.provider ? `at ${event.provider}` : '';
+            const tags = event.tags?.length > 0 ? `[${event.tags.join(', ')}]` : '';
+            return `  * ${date}: ${event.description} ${cost} ${provider} ${tags}`;
+          })
+          .join('\n');
+
+        return `${gear.make} ${gear.model} History:\n${events}`;
+      }).join('\n\n');
+
+      const wishlistText = wishlist.map(gear => 
+        `- ${gear.make} ${gear.model} (${gear.type})`
+      ).join('\n');
+
+      // Create the prompt
+      const prompt = this.CHAT_PROMPT
+        .replace('{collection}', collectionText || 'No items')
+        .replace('{history}', historyText || 'No history records')
+        .replace('{wishlist}', wishlistText || 'No items')
+        .replace('{input}', input);
+
+      console.log('Generated prompt:', prompt);
+
+      // Send to Gemini
+      console.log('Sending request to Gemini...');
+      const result = await this.model.generateContent(prompt);
+      console.log('Raw Gemini response:', result);
+
+      const response = await result.response;
+      console.log('Extracted response:', response);
+
+      return response.text();
+    } catch (error) {
+      console.error('Error in queryCollection:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      }
+      throw new Error('Failed to process your question. Please try again.');
+    }
+  }
+
+  private createCollectionContext(gear: BaseGear[]): string {
+    const ownedGear = gear.filter(g => g.status === GearStatus.Own);
+    const soldGear = gear.filter(g => g.status === GearStatus.Sold);
+    const wishlistGear = gear.filter(g => g.status === GearStatus.Want);
+
+    return `
+      Collection Overview:
+      - Total items: ${gear.length}
+      - Currently owned: ${ownedGear.length}
+      - Sold: ${soldGear.length}
+      - Wishlist: ${wishlistGear.length}
+
+      Currently Owned Items (${ownedGear.length} items):
+      ${ownedGear.map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})`).join('\n')}
+
+      ${soldGear.length > 0 ? `
+      Previously Owned Items (${soldGear.length} items):
+      ${soldGear.map(item => `- ${item.make} ${item.model} (${item.year || 'Year unknown'})`).join('\n')}
+      ` : ''}
+
+      ${wishlistGear.length > 0 ? `
+      Wishlist Items (${wishlistGear.length} items):
+      ${wishlistGear.map(item => `- ${item.make} ${item.model}`).join('\n')}
+      ` : ''}
+
+      Service History:
+      ${gear.filter(g => g.status === GearStatus.Own).map(item => {
+        if (!item.serviceHistory?.length) return '';
+        return `
+          ${item.make} ${item.model}:
+          ${item.serviceHistory.map(record => `- ${new Date(record.date).toLocaleDateString()}: ${record.description}`).join('\n')}
+        `;
+      }).filter(Boolean).join('\n')}
+    `;
   }
 }
 

@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Box, TextField, Button, Paper, Typography, CircularProgress } from '@mui/material';
+import { Box, TextField, Button, Paper, Typography, CircularProgress, IconButton } from '@mui/material';
+import { MessageCircle, X } from 'lucide-react';
 import { OpenAIService } from '../../services/openaiService';
 import { GearService } from '../../services/gearService';
 import { BaseGear, GearType } from '../../types/gear';
 import { auth } from '../../config/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigate } from 'react-router-dom';
+import { theme } from '../../styles/theme';
 
 const openAiService = new OpenAIService(import.meta.env.VITE_OPENAI_API_KEY || '');
 const gearService = new GearService();
 
 export const GearChat = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,64 +74,121 @@ export const GearChat = () => {
   };
 
   if (authLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return null;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Add New Gear
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 3 }}>
-        Paste product specifications or description, and I'll help you organize the information.
-      </Typography>
+    <>
+      {/* Chat toggle button */}
+      <IconButton
+        onClick={() => setIsOpen(!isOpen)}
+        sx={{
+          backgroundColor: theme.colors.primary.steel,
+          color: theme.colors.text.inverse,
+          width: '48px',
+          height: '48px',
+          '&:hover': {
+            backgroundColor: theme.colors.primary.gunmetal,
+          },
+        }}
+      >
+        <MessageCircle />
+      </IconButton>
 
-      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            multiline
-            rows={6}
-            variant="outlined"
-            placeholder="Paste gear specifications or description here..."
-            value={input}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-            disabled={loading}
-          />
-          
-          {error && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {error}
-            </Typography>
-          )}
-
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={loading || !input.trim() || !user}
-              startIcon={loading ? <CircularProgress size={20} /> : null}
-            >
-              {loading ? 'Processing...' : 'Process Gear Data'}
-            </Button>
+      {/* Chat window */}
+      {isOpen && (
+        <Paper
+          elevation={3}
+          sx={{
+            position: 'absolute',
+            bottom: '64px',
+            right: 0,
+            width: '350px',
+            maxHeight: '500px',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: 'white',
+          }}
+        >
+          {/* Chat header */}
+          <Box sx={{ 
+            p: 2, 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            borderBottom: `1px solid ${theme.colors.ui.border}`,
+          }}>
+            <Typography variant="h6">Gear Assistant</Typography>
+            <IconButton size="small" onClick={() => setIsOpen(false)}>
+              <X size={20} />
+            </IconButton>
           </Box>
-        </form>
-      </Paper>
 
-      {parsedGear && (
-        <Paper elevation={3} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Processed Gear Data
-          </Typography>
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {JSON.stringify(parsedGear, null, 2)}
-          </pre>
+          {/* Chat content */}
+          <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Paste product specifications or description, and I'll help you organize the information.
+            </Typography>
+
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                placeholder="Paste gear specifications or description here..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={loading}
+                size="small"
+              />
+              
+              {error && (
+                <Typography color="error" variant="caption" sx={{ mt: 1, display: 'block' }}>
+                  {error}
+                </Typography>
+              )}
+
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading || !input.trim()}
+                  size="small"
+                  sx={{
+                    backgroundColor: theme.colors.primary.steel,
+                    '&:hover': {
+                      backgroundColor: theme.colors.primary.gunmetal,
+                    },
+                  }}
+                >
+                  {loading ? <CircularProgress size={20} /> : 'Process'}
+                </Button>
+              </Box>
+            </form>
+
+            {parsedGear && (
+              <Paper variant="outlined" sx={{ mt: 2, p: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Processed Gear Data
+                </Typography>
+                <pre style={{ 
+                  whiteSpace: 'pre-wrap', 
+                  wordBreak: 'break-word',
+                  fontSize: '12px',
+                  margin: 0 
+                }}>
+                  {JSON.stringify(parsedGear, null, 2)}
+                </pre>
+              </Paper>
+            )}
+          </Box>
         </Paper>
       )}
-    </Box>
+    </>
   );
 }; 

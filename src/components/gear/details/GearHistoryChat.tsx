@@ -37,10 +37,15 @@ export const GearHistoryChat: React.FC<GearHistoryChatProps> = ({ gear, onUpdate
         throw new Error('Failed to parse history record properly');
       }
 
+      // Convert the date if it's not already an ISO string
+      const dateToSubmit = typeof parsedRecord.date === 'string' 
+        ? parsedRecord.date 
+        : parsedRecord.date.toISOString();
+
       // Create a new unified record with the parsed data
       const newRecord: HistoryRecord = {
-        id: Date.now().toString(),
-        date: parsedRecord.date.toISOString(),
+        id: `srv-${Date.now()}`,
+        date: dateToSubmit,
         description: parsedRecord.description,
         provider: parsedRecord.provider || '',
         cost: parsedRecord.cost || 0,

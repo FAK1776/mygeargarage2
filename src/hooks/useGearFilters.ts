@@ -32,12 +32,12 @@ export const useGearFilters = ({ gear }: UseGearFiltersProps): UseGearFiltersRet
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(item => {
-        // Search in basic info
+        // Search in basic guitar info
         if (
           item.make?.toLowerCase().includes(query) ||
-          item.model?.toLowerCase().includes(query) ||
-          item.serialNumber?.toLowerCase().includes(query)
+          item.model?.toLowerCase().includes(query)
         ) {
+          console.log(`Match in basic info for ${item.make} ${item.model}`);
           return true;
         }
 
@@ -46,28 +46,42 @@ export const useGearFilters = ({ gear }: UseGearFiltersProps): UseGearFiltersRet
         if (!specs) return false;
         
         // Helper function to search in an object's values
-        const searchInObject = (obj: Record<string, any> | undefined) => {
+        const searchInObject = (obj: Record<string, any> | undefined, path: string = ''): boolean => {
           if (!obj || typeof obj !== 'object') return false;
-          return Object.values(obj).some(value => {
+          
+          for (const [key, value] of Object.entries(obj)) {
+            const currentPath = path ? `${path}.${key}` : key;
+            
+            // Search in string values
             if (typeof value === 'string') {
-              return value.toLowerCase().includes(query);
+              if (value.toLowerCase().includes(query)) {
+                console.log(`Match found in ${item.make} ${item.model} at ${currentPath}: "${value}"`);
+                return true;
+              }
             }
+            
+            // Search in boolean values
+            if (typeof value === 'boolean') {
+              const matches = query === 'true' ? value : query === 'false' ? !value : false;
+              if (matches) {
+                console.log(`Match found in ${item.make} ${item.model} at ${currentPath}: ${value}`);
+                return true;
+              }
+            }
+            
+            // Search in nested objects (for nested specifications)
             if (value && typeof value === 'object') {
-              return searchInObject(value);
+              if (searchInObject(value, currentPath)) {
+                return true;
+              }
             }
-            return false;
-          });
+          }
+          
+          return false;
         };
 
         // Search in all specification categories
-        return (
-          searchInObject(specs.body) ||
-          searchInObject(specs.neck) ||
-          searchInObject(specs.headstock) ||
-          searchInObject(specs.hardware) ||
-          searchInObject(specs.electronics) ||
-          searchInObject(specs.extras)
-        );
+        return searchInObject(specs);
       });
     }
 

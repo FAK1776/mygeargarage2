@@ -100,8 +100,10 @@ config/
 ```
 public/
 ├── images/
-│   ├── logo.svg
-│   └── icons/
+│   ├── AxeVault_logo2.png
+│   ├── AxeVault_headerlogo.png
+│   ├── AxeVault_loginbackground.png
+│   └── favicon.png
 ├── fonts/
 └── data/
 ```

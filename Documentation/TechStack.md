@@ -1,25 +1,18 @@
 # Technology Stack
 
+## Hosting and Security
+- Firebase Hosting with HTTPS enforcement
+- HSTS (HTTP Strict Transport Security)
+- 301 redirects for HTTP to HTTPS
+- Security headers configuration
+
 ## Frontend
 - React with TypeScript
 - Vite for build tooling
 - TailwindCSS for styling
-  - Custom component library
-  - Responsive design system
-  - Consistent spacing utilities
-  - Dynamic color palette
 - React Router for navigation
-  - Custom route guards
-  - Navigation state management
 - React Query for data fetching
-- UI Components
-  - Custom form controls
-  - Loading indicators
-  - Progress bars
-  - Modal system
-  - Toast notifications
-  - Responsive grid system
-  - Timeline components
+- Firebase SDK for web
 
 ## Backend
 - Firebase
@@ -78,3 +71,8 @@
 - Chrome DevTools
 - Firebase CLI
 - Node.js and npm 
+
+## Search Implementation
+- Client-side search with TypeScript
+- Specification-focused search algorithm
+- Debug logging capabilities 

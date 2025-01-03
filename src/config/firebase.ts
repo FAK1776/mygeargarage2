@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
 // Debug logging for environment
 console.log('Environment Mode:', import.meta.env.MODE);
@@ -33,23 +33,29 @@ if (missingKeys.length > 0) {
   throw new Error(`Firebase configuration is incomplete. Missing: ${missingKeys.join(', ')}`);
 }
 
-let app;
-try {
-  console.log('Initializing Firebase with config:', {
-    apiKey: firebaseConfig.apiKey ? 'present' : 'missing',
-    authDomain: firebaseConfig.authDomain ? 'present' : 'missing',
-    projectId: firebaseConfig.projectId ? 'present' : 'missing',
-    storageBucket: firebaseConfig.storageBucket ? 'present' : 'missing',
-    messagingSenderId: firebaseConfig.messagingSenderId ? 'present' : 'missing',
-    appId: firebaseConfig.appId ? 'present' : 'missing'
-  });
-  
-  app = initializeApp(firebaseConfig);
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-  throw error;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// Connect to emulators in development
+if (import.meta.env.MODE === 'development') {
+  console.log('Connecting to Firebase emulators in development mode...');
+  try {
+    connectAuthEmulator(auth, 'http://localhost:9099');
+    console.log('✅ Connected to Auth emulator');
+    
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    console.log('✅ Connected to Firestore emulator');
+    
+    connectStorageEmulator(storage, 'localhost', 9199);
+    console.log('✅ Connected to Storage emulator');
+    
+    console.warn('Using Firebase Emulators - DO NOT use production credentials');
+  } catch (error) {
+    console.error('❌ Error connecting to emulators:', error);
+  }
 }
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app); 
+export { app, auth, db, storage }; 

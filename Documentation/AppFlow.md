@@ -125,3 +125,47 @@ Primary navigation order:
 - Authentication failures
 - State recovery procedures
 - User-friendly error messages 
+
+# Application Flow
+
+## User Interactions
+
+### My Gear Guru Chat Bot
+1. **Access**
+   - Chat bot is available as a floating element on the My Gear page
+   - Users can toggle the chat interface with the message icon
+   - Chat persists while navigating within the My Gear page
+
+2. **Interaction Flow**
+   - User opens chat bot
+   - System displays welcome message
+   - User enters question about their gear
+   - System processes query through Gemini API
+   - System accesses user's gear data including:
+     - Gear inventory
+     - Service history
+     - Specifications
+     - Purchase/sale information
+   - System provides contextual response
+   - User can continue conversation or close chat
+
+3. **Data Flow**
+   ```mermaid
+   sequenceDiagram
+     participant U as User
+     participant C as Chat UI
+     participant G as GearGuruService
+     participant F as Firestore
+     participant A as Gemini API
+
+     U->>C: Opens chat
+     C->>C: Display welcome
+     U->>C: Sends question
+     C->>G: Process query
+     G->>F: Fetch gear data
+     F-->>G: Return gear data
+     G->>A: Generate response
+     A-->>G: Return response
+     G-->>C: Display response
+     C-->>U: Show message
+   ``` 

@@ -1,49 +1,66 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { theme } from '../../styles/theme';
 
 export const Footer = () => {
   return (
-    <footer className="bg-gray-100 mt-auto">
+    <footer style={{ backgroundColor: theme.colors.ui.backgroundAlt }}>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <img
-              src="/logo.png"
-              alt="My Gear Garage"
-              className="h-12"
+              src="/images/AxeVault_logo2.png"
+              alt="Axe Vault"
+              className="h-16"
             />
           </div>
           
           <nav className="flex flex-wrap justify-center gap-6">
             <Link 
               to="/faq" 
-              className="text-gray-600 hover:text-[#EE5430] transition-colors"
+              style={{ 
+                color: theme.colors.text.secondary,
+                ':hover': { color: theme.colors.primary.gold }
+              }}
+              className="transition-colors"
             >
               FAQ
             </Link>
             <Link 
               to="/privacy" 
-              className="text-gray-600 hover:text-[#EE5430] transition-colors"
+              style={{ 
+                color: theme.colors.text.secondary,
+                ':hover': { color: theme.colors.primary.gold }
+              }}
+              className="transition-colors"
             >
               Privacy Policy
             </Link>
             <Link 
               to="/terms" 
-              className="text-gray-600 hover:text-[#EE5430] transition-colors"
+              style={{ 
+                color: theme.colors.text.secondary,
+                ':hover': { color: theme.colors.primary.gold }
+              }}
+              className="transition-colors"
             >
               Terms of Service
             </Link>
             <a 
-              href="mailto:support@mygeargarage.com"
-              className="text-gray-600 hover:text-[#EE5430] transition-colors"
+              href="mailto:support@axevault.com"
+              style={{ 
+                color: theme.colors.text.secondary,
+                ':hover': { color: theme.colors.primary.gold }
+              }}
+              className="transition-colors"
             >
               Contact Support
             </a>
           </nav>
         </div>
         
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} My Gear Garage. All rights reserved.
+        <div className="mt-8 text-center" style={{ color: theme.colors.text.secondary }}>
+          © {new Date().getFullYear()} Axe Vault. All rights reserved.
         </div>
       </div>
     </footer>

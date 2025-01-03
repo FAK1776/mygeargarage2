@@ -59,8 +59,21 @@ A web application for musicians to track their gear collection, including purcha
 - Log maintenance and service records
 - Track service providers and costs
 - Categorize service types (maintenance, repairs, modifications)
-- AI-powered service record parsing
+- AI-powered features:
+  - Natural language service record parsing
+  - Intelligent date recognition (including relative dates)
+  - Automatic cost extraction and formatting
+  - Smart provider detection
+  - Automatic tag categorization
+  - Ownership status tracking
 - Chronological timeline view of all events
+- Interactive chat interface for:
+  - Querying service history
+  - Adding new records
+  - Getting insights about maintenance
+  - Tracking ownership changes
+- Real-time updates and synchronization
+- Comprehensive filtering and sorting options
 
 ## Documentation
 
@@ -109,6 +122,7 @@ A web application for musicians to track their gear collection, including purcha
 - Node.js
 - npm or yarn
 - Firebase CLI
+- Java Runtime Environment (JRE) for Firebase Emulators
 
 ### Getting Started
 
@@ -126,13 +140,47 @@ npm install
 3. Set up environment variables
 ```bash
 cp .env.example .env
-# Add your Firebase and Google AI API keys
+# Add your Firebase and Google AI (Gemini) API keys:
+# - VITE_FIREBASE_API_KEY
+# - VITE_FIREBASE_AUTH_DOMAIN
+# - VITE_FIREBASE_PROJECT_ID
+# - VITE_FIREBASE_STORAGE_BUCKET
+# - VITE_FIREBASE_MESSAGING_SENDER_ID
+# - VITE_FIREBASE_APP_ID
+# - VITE_GEMINI_API_KEY
 ```
 
-4. Start development server
+4. Initialize Firebase Emulators
 ```bash
+firebase init emulators
+# Select the following emulators:
+# - Authentication
+# - Firestore
+# - Storage
+# - Hosting
+# - Extensions
+# Enable the Emulator UI when prompted
+```
+
+5. Start the development environment
+```bash
+# Terminal 1: Start Firebase emulators
+firebase emulators:start
+
+# Terminal 2: Start the development server
 npm run dev
 ```
+
+The application will be available at:
+- Web App: http://localhost:5173
+- Firebase Emulator UI: http://localhost:4040
+
+### Local Development Features
+- Full Firebase emulation (Auth, Firestore, Storage)
+- Real-time data updates
+- AI-powered chat functionality using Gemini API
+- Service history parsing and tracking
+- Local image upload and storage
 
 ## Deployment
 
@@ -186,6 +234,16 @@ For additional support or questions:
 - Enhanced visual hierarchy and consistency
 - Optimized specification storage and retrieval
 - Added proper type support for all specification fields
+- Enhanced chat functionality with Gemini AI integration
+- Improved service history parsing and date handling
+- Added support for relative dates in service records
+- Enhanced cost parsing with proper number formatting
+- Improved provider and tag detection in service records
+- Added local development environment with Firebase emulators
+- Fixed date handling in service history records
+- Enhanced error handling in chat components
+- Improved service history display and sorting
+- Added support for ownership status tracking
 
 ## License
 

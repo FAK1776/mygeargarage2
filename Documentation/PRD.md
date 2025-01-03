@@ -161,3 +161,29 @@ My Gear Garage is a web application designed for musicians to track their gear c
 - Service history documentation
 - User satisfaction ratings
 - Performance benchmarks 
+
+## Security Requirements
+
+### HTTPS and Security Headers
+- All traffic must be served over HTTPS
+- HSTS headers must be implemented
+- Proper security headers must be in place
+- Automatic redirection from HTTP to HTTPS
+
+### Asset Security
+- All assets must be served over HTTPS
+- Proper favicon implementation
+- Organized asset structure in /public/images
+
+## Search Functionality
+
+### Specification Search
+- Search should focus on guitar specifications
+- Basic info (make, model) should be searchable
+- Service history should be excluded from search
+- Debug logging for troubleshooting
+
+### Search Performance
+- Search should be responsive and accurate
+- Results should be relevant to specification fields
+- Future consideration for search filters 
